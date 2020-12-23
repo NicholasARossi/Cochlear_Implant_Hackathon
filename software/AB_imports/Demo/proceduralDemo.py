@@ -28,14 +28,13 @@ from ..Vocoder.vocoder import vocoderFunc
 
 
 
-def demo4_procedural():
+def demo4_procedural(input_file):
         
     stratWindow = 0.5*(np.blackman(256)+np.hanning(256))
     stratWindow = stratWindow.reshape(1,stratWindow.size)  
-    basepath = Path(__file__).parent.parent.absolute()
-    
+
     parStrat = {
-            'wavFile' : basepath / 'Sounds/AzBio_3sent_65dBSPL.wav',  # this should be a complete absolute path to your sound file of choice
+            'wavFile' : input_file,  # this should be a complete absolute path to your sound file of choice
             'fs' : 17400, # this value matches implant internal audio rate. incoming wav files resampled to match
             'nFft' : 256,
             'nHop' : 20,
