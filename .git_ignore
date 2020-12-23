@@ -1,0 +1,18 @@
+# Environments
+venv/
+.python-version
+
+# mac Os
+*.DS_Store
+*.idea/
+*.pytest_cache
+*.pyc
+
+__pycache__/
+__pycache__
+# scripts
+calculate*
+/tests/error_testing.py
+/make.bat
+/Makefile
+/source/
