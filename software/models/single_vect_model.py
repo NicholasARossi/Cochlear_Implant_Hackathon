@@ -4,12 +4,15 @@ import os
 import sys
 sys.path.append(os.path.abspath('../AB_imports/'))
 sys.path.append(os.path.abspath('../fitness_functions/'))
+sys.path.append(os.path.abspath('../../software/'))
 
 from sklearn.preprocessing import StandardScaler
 from scipy.io import wavfile
-from delta_wav import convert_sample_rate,compute_wavfile_delta
+from software.fitness_functions.delta_wav import convert_sample_rate,compute_wavfile_delta
 from software.AB_imports.Vocoder.vocoder import vocoderFunc
 from scipy.signal import convolve,medfilt
+
+import string
 
 class FitnessWrapper:
     def __init__(self, wavefile_path=os.path.abspath('../../sample_data/sentence1_55_clean.wav')):
@@ -49,12 +52,12 @@ class FitnessWrapper:
     def convert_elgram(self):
 
 
-        original_std = np.std(self.transformed_data)
 
         values = self.transformed_data.reshape(-1, 1)
-        scaler = StandardScaler()
+        scaler = StandardScaler(with_std=False)
         scaler = scaler.fit(values)
-        normalized = scaler.transform(values) * original_std
+        normalized = scaler.transform(values)
+
 
         # convert to elgram type
         self.elGram = np.vstack([normalized.T] * 16)
@@ -62,7 +65,10 @@ class FitnessWrapper:
     def score_elgram(self):
         self.audioOut, self.audioFs = vocoderFunc(self.elGram, saveOutput=False)
 
-        self.score=compute_wavfile_delta(self.original_data ,self.original_rate,self.audioOut,self.audioFs)
+        if np.isnan(self.audioOut).any()==False:
+            self.score=compute_wavfile_delta(self.original_data ,self.original_rate,self.audioOut,self.audioFs)
+        else:
+            self.score=0
         return self.score
 
     def score_new_transform(self,transform):
@@ -144,7 +150,9 @@ class VectorClass:
 
 
 
-
+class oddint:
+    def __init__(self,range):
+        self.data=random.randrange(1, range+1, 20)
 
 
 if __name__ == '__main__':
@@ -159,13 +167,16 @@ if __name__ == '__main__':
     og_vect=VectorClass(fw.prepped_data)
 
 
+    def round_up_to_odd(f):
+        return np.ceil(f) // 2 * 2 + 1
 
-    def vector_medfilter(vc, x_int):
-        if x_int is not None:
-            vc.data = medfilt(vc.data, x_int)
-            return vc
-        else:
-            return vc
+    def vector_medfilter(vc, integer):
+        ## requires odd integers
+        oddint=round_up_to_odd(integer)
+
+        vc.data = medfilt(vc.data, oddint)
+        return vc
+
 
     def vector_multiply(vc,x):
         if x is not None:
@@ -179,22 +190,24 @@ if __name__ == '__main__':
         return vc1
 
 
-    def int_to_int(x):
+    def pass_primitive(x):
 
-        return int(x)
+        return x
 
     pset = gp.PrimitiveSetTyped("MAIN", [VectorClass],VectorClass)
 
     pset.addPrimitive(vector_multiply, [VectorClass,float], VectorClass)
     pset.addPrimitive(vector_convolve,[VectorClass,VectorClass],VectorClass)
-    pset.addPrimitive(vector_medfilter,[VectorClass,int],VectorClass)
-    pset.addPrimitive(int_to_int,[int],int)
+    pset.addPrimitive(vector_medfilter,[VectorClass,oddint],VectorClass)
 
     pset.addPrimitive(operator.neg, [float],float)
 
-    pset.addEphemeralConstant("odd_int", lambda: random.randrange(1, 101+1, 20), int)
-    pset.addEphemeralConstant("uniform", lambda: random.uniform(0, 2), float)
-
+    #pset.addEphemeralConstant("odd_int", lambda: random.randrange(1, 101+1, 20), int)
+    pset.addEphemeralConstant("rand_int", lambda: random.randrange(1, 101+1, 20), oddint)
+    #pset.addTerminal(oddint(101), oddint)
+    pset.addEphemeralConstant("uniform", lambda: random.uniform(0.001, 2), float)
+    pset.renameArguments(ARG0="input_audio")
+    pset.addPrimitive(pass_primitive,[oddint],oddint)
 
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -232,7 +245,7 @@ if __name__ == '__main__':
     mstats.register("min", np.min)
     mstats.register("max", np.max)
 
-    pop = toolbox.population(n=5)
+    pop = toolbox.population(n=300)
     hof = tools.HallOfFame(1)
     pop, log = algorithms.eaSimple(pop, toolbox, 0.5, 0.1, 40, stats=mstats,
                                    halloffame=hof, verbose=True)

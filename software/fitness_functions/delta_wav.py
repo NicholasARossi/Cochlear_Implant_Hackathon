@@ -3,7 +3,8 @@ from pesq import pesq
 from scipy.io.wavfile import read as wavread
 import numpy as np
 from scipy import interpolate
-
+from sklearn.metrics import mean_squared_error
+from scipy.stats import pearsonr
 
 def convert_sample_rate(old_audio, old_samplerate, newrate=16000):
     duration = old_audio.shape[0] / old_samplerate
@@ -32,3 +33,15 @@ def compute_wavfile_delta(reference,reference_rate,output,output_rate,newrate=16
     return pesq(newrate, ref_remastered, output_remastered, function)
 
 
+def wavefile_MSE(reference,reference_rate,output,output_rate):
+    ref_remastered = convert_sample_rate(reference, reference_rate)
+    output_remastered = convert_sample_rate(output, output_rate)
+    min_len=min([len(ref_remastered),len(output_remastered)])
+    return mean_squared_error(ref_remastered[:min_len],output_remastered[:min_len])
+
+
+def wavefile_correlation(reference,reference_rate,output,output_rate):
+    ref_remastered = convert_sample_rate(reference, reference_rate)
+    output_remastered = convert_sample_rate(output, output_rate)
+    min_len=min([len(ref_remastered),len(output_remastered)])
+    return pearsonr(ref_remastered[:min_len],output_remastered[:min_len])[0]
