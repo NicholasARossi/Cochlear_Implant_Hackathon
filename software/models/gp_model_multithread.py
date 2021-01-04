@@ -10,7 +10,7 @@ import multiprocessing
 
 from sklearn.preprocessing import StandardScaler
 from scipy.io import wavfile
-from fitness_functions.delta_wav import convert_sample_rate,compute_wavfile_delta,wavefile_MSE
+from fitness_functions.delta_wav import convert_sample_rate,compute_wavfile_delta,wavefile_correlation
 
 from Vocoder.vocoder import vocoderFunc
 from scipy.signal import convolve,medfilt,hilbert
@@ -89,7 +89,7 @@ class FitnessWrapper:
             self.audioOut, self.audioFs = vocoderFunc(self.elGram, saveOutput=False)
 
             if np.isnan(self.audioOut).any()==False:
-                self.score=wavefile_MSE(self.original_data/(2**15-1) ,self.original_rate,self.audioOut,self.audioFs)
+                self.score=wavefile_correlation(self.original_data/(2**15-1) ,self.original_rate,self.audioOut,self.audioFs)
             else:
                 self.score=0
             return self.score
@@ -210,18 +210,18 @@ if __name__ == '__main__':
 
 
     ### ephermerals and terminals
-    pset.addTerminal(og_mat,MatrixClass)
+    #pset.addTerminal(og_mat,MatrixClass)
     pset.addEphemeralConstant("rand_int", lambda: random.randrange(1, 101+1, 20), int)
     pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 1.5), float)
 
     pset.renameArguments(ARG0="input_audio")
 
 
-    creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-    creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
+    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
-    toolbox.register("expr_init", gp.genFull, pset=pset, min_=1, max_=2)
+    toolbox.register("expr_init", gp.genFull, pset=pset, min_=1, max_=3)
     #pool = multiprocessing.Pool()
     #toolbox.register("map", pool.map)
 
