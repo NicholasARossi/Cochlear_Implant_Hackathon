@@ -5,13 +5,14 @@ import sys
 sys.path.append(os.path.abspath('../AB_imports/'))
 sys.path.append(os.path.abspath('../fitness_functions/'))
 sys.path.append(os.path.abspath('../../software/'))
-from scoop import futures
+#from scoop import futures
+import multiprocessing
 
 from sklearn.preprocessing import StandardScaler
 from scipy.io import wavfile
-from software.fitness_functions.delta_wav import convert_sample_rate,compute_wavfile_delta,wavefile_MSE
+from fitness_functions.delta_wav import convert_sample_rate,compute_wavfile_delta,wavefile_MSE
 
-from software.AB_imports.Vocoder.vocoder import vocoderFunc
+from Vocoder.vocoder import vocoderFunc
 from scipy.signal import convolve,medfilt,hilbert
 import itertools
 import pickle
@@ -221,7 +222,10 @@ if __name__ == '__main__':
 
     toolbox = base.Toolbox()
     toolbox.register("expr_init", gp.genFull, pset=pset, min_=1, max_=2)
-    toolbox.register("map", futures.map)
+    #pool = multiprocessing.Pool()
+    #toolbox.register("map", pool.map)
+
+   # toolbox.register("map", futures.map)
 
     # Structure initializers
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr_init)
@@ -240,7 +244,7 @@ if __name__ == '__main__':
     toolbox.register("evaluate", evalSymbTransform, fw=fw)
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", gp.cxOnePoint)
-    toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
+    toolbox.register("expr_mut", gp.genFull, min_=0, max_=3)
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
     toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=17))
@@ -254,9 +258,9 @@ if __name__ == '__main__':
     mstats.register("min", np.min)
     mstats.register("max", np.max)
 
-    pop = toolbox.population(n=20)
+    pop = toolbox.population(n=300)
     hof = tools.HallOfFame(5)
-    pop, log = algorithms.eaSimple(pop, toolbox, 0.5, 0.1, 1, stats=mstats,
+    pop, log = algorithms.eaSimple(pop, toolbox, 0.5, 0.1, 50, stats=mstats,
                                    halloffame=hof, verbose=True)
 
 
