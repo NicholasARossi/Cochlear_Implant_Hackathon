@@ -46,7 +46,7 @@ def nrGainFunc(par,gMin,SNR):
 
 
 def noiseReductionFunc(par,A):
-    from Utility.checkParamFields import checkParamFields
+    from ..Utility.checkParamFields import checkParamFields
     # check input
     checkParamFields(par,['tau_speech','tau_noise','durHold','threshHold',
                           'maxAtt','snrFloor','snrCeil','snrSlope','slopeFact',

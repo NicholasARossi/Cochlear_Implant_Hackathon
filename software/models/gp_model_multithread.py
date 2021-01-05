@@ -10,7 +10,7 @@ import multiprocessing
 
 from sklearn.preprocessing import StandardScaler
 from scipy.io import wavfile
-from fitness_functions.delta_wav import convert_sample_rate,compute_wavfile_delta,wavefile_correlation
+from fitness_functions.delta_wav import convert_sample_rate,compute_wavfile_delta,wavefile_correlation,wavefile_max_xcor
 
 from Vocoder.vocoder import vocoderFunc
 from scipy.signal import convolve,medfilt,hilbert
@@ -89,7 +89,7 @@ class FitnessWrapper:
             self.audioOut, self.audioFs = vocoderFunc(self.elGram, saveOutput=False)
 
             if np.isnan(self.audioOut).any()==False:
-                self.score=wavefile_correlation(self.original_data/(2**15-1) ,self.original_rate,self.audioOut,self.audioFs)
+                self.score=wavefile_max_xcor(self.original_data,self.original_rate,self.audioOut,self.audioFs)
             else:
                 self.score=0
             return self.score
@@ -210,7 +210,7 @@ if __name__ == '__main__':
 
 
     ### ephermerals and terminals
-    #pset.addTerminal(og_mat,MatrixClass)
+    pset.addTerminal(og_mat,MatrixClass)
     pset.addEphemeralConstant("rand_int", lambda: random.randrange(1, 101+1, 20), int)
     pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 1.5), float)
 
@@ -271,19 +271,26 @@ if __name__ == '__main__':
             transform = toolbox.compile(expr=example)
             score = fw.score_new_transform(transform)
 
-            results={'max_result':example,
+            results_scores={
                      'audio_input':fw.original_data,
                      'frequency_input':fw.original_rate,
                      'audio_out':fw.audioOut,
-                     'frequency_out':fw.audioFs
+                     'frequency_out':fw.audioFs,
+                     'score':score
 
+            }
+
+            results_models={'max_result':example
             }
 
 
             output_directory=os.path.abspath('../../results')
             timestamp = '{:%Y_%m_%d_%H%M%S}'.format(datetime.datetime.now())
-            out_file = os.path.join(output_directory, "results_{}.pkl".format(timestamp))
-            pickle.dump(results, open(out_file, "wb"))
+            out_file = os.path.join(output_directory, "results_scores_{}.pkl".format(timestamp))
+            pickle.dump(results_scores, open(out_file, "wb"))
+            out_file = os.path.join(output_directory, "results_models_{}.pkl".format(timestamp))
+            pickle.dump(results_models, open(out_file, "wb"))
+
             break
         except:
             pass

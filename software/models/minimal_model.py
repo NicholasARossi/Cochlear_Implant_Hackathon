@@ -3,11 +3,12 @@ import numpy as np
 import os
 import sys
 sys.path.append(os.path.abspath('../AB_imports/'))
+sys.path.append(os.path.abspath('../AB_imports/'))
 
 from sklearn.preprocessing import StandardScaler
 from scipy.io import wavfile
 from ..fitness_functions.delta_wav import convert_sample_rate
-from Vocoder.vocoder import vocoderFunc
+from software.AB_imports.Vocoder.vocoder import vocoderFunc
 
 
 def basic_model(wavefile_path=os.path.abspath('../sample_data/sentence1_55_clean.wav')):
