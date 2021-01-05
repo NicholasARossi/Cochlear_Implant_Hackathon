@@ -13,7 +13,7 @@ from scipy.io import wavfile
 from fitness_functions.delta_wav import convert_sample_rate,compute_wavfile_delta,wavefile_correlation,wavefile_max_xcor
 
 from Vocoder.vocoder import vocoderFunc
-from scipy.signal import convolve,medfilt,hilbert
+from scipy.signal import convolve,medfilt,hilbert,butter,filtfilt
 import itertools
 import pickle
 import datetime
@@ -48,7 +48,7 @@ class FitnessWrapper:
 
 
     def run_transform(self,transform):
-        vc=VectorClass(self.prepped_data)
+        vc=VectorClass(self.prepped_data,self.prepped_rate)
 
         self.transformed_data=transform(vc).data
 
@@ -112,9 +112,10 @@ class MatrixClass:
         return MatrixClass(matrix)
 
 class VectorClass:
-    def __init__(self, data):
+    def __init__(self, data,frequency):
 
         self.data=data
+        self.frequency=frequency
 
 
 
@@ -132,7 +133,7 @@ if __name__ == '__main__':
 
     fw = FitnessWrapper()
 
-    og_vect=VectorClass(fw.prepped_data)
+    og_vect=VectorClass(fw.prepped_data,fw.prepped_rate)
 
     og_mat=MatrixClass(np.vstack([fw.prepped_data]*16))
 
@@ -146,6 +147,56 @@ if __name__ == '__main__':
         vc.data = medfilt(vc.data, oddint)
         return vc
 
+    def vector_low_freq_filter(vc):
+        fs = vc.frequency
+
+        fc = 1000  # Cut-off frequency of the filter
+        w = fc / (fs / 2)  # Normalize the frequency
+        b, a = butter(5, w, 'low')
+        vc.data = filtfilt(b, a, vc.data)
+        return vc
+    def vector_super_low_freq_filter(vc):
+        fs = vc.frequency
+
+        fc = 500  # Cut-off frequency of the filter
+        w = fc / (fs / 2)  # Normalize the frequency
+        b, a = butter(5, w, 'low')
+        vc.data = filtfilt(b, a, vc.data)
+        return vc
+
+    def vector_ultra_low_freq_filter(vc):
+        fs = vc.frequency
+
+        fc = 200  # Cut-off frequency of the filter
+        w = fc / (fs / 2)  # Normalize the frequency
+        b, a = butter(5, w, 'low')
+        vc.data = filtfilt(b, a, vc.data)
+        return vc
+    def vector_high_freq_filter(vc):
+        fs = vc.frequency
+
+        fc = 1000  # Cut-off frequency of the filter
+        w = fc / (fs / 2)  # Normalize the frequency
+        b, a = butter(5, w, 'high')
+        vc.data = filtfilt(b, a, vc.data)
+        return vc
+    def vector_super_high_freq_filter(vc):
+        fs = vc.frequency
+
+        fc = 500  # Cut-off frequency of the filter
+        w = fc / (fs / 2)  # Normalize the frequency
+        b, a = butter(5, w, 'high')
+        vc.data = filtfilt(b, a, vc.data)
+        return vc
+
+    def vector_ultra_high_freq_filter(vc):
+        fs = vc.frequency
+
+        fc = 200  # Cut-off frequency of the filter
+        w = fc / (fs / 2)  # Normalize the frequency
+        b, a = butter(5, w, 'high')
+        vc.data = filtfilt(b, a, vc.data)
+        return vc
 
     def vector_multiply(vc,x):
         if x is not None:
@@ -198,6 +249,14 @@ if __name__ == '__main__':
     ### vector value primitives
     pset.addPrimitive(vector_multiply, [VectorClass,float], VectorClass)
     pset.addPrimitive(norm_hilbert,[VectorClass],VectorClass)
+    pset.addPrimitive(vector_low_freq_filter, [VectorClass], VectorClass)
+    pset.addPrimitive(vector_super_low_freq_filter, [VectorClass], VectorClass)
+    pset.addPrimitive(vector_ultra_low_freq_filter, [VectorClass], VectorClass)
+
+    pset.addPrimitive(vector_high_freq_filter, [VectorClass], VectorClass)
+    pset.addPrimitive(vector_super_high_freq_filter, [VectorClass], VectorClass)
+    pset.addPrimitive(vector_ultra_high_freq_filter, [VectorClass], VectorClass)
+
     #pset.addPrimitive(vector_divide, [VectorClass,float], VectorClass)
 
     pset.addPrimitive(vector_medfilter,[VectorClass,int],VectorClass)
@@ -205,7 +264,6 @@ if __name__ == '__main__':
     pset.addPrimitive(pass_primitive,[float],float)
 
     ### value value primitives
-    pset.addPrimitive(operator.neg, [float],float)
     pset.addPrimitive(operator.neg, [float],float)
 
 
