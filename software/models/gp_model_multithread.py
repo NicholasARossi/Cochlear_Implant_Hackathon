@@ -258,9 +258,9 @@ if __name__ == '__main__':
     mstats.register("min", np.min)
     mstats.register("max", np.max)
 
-    pop = toolbox.population(n=300)
+    pop = toolbox.population(n=50)
     hof = tools.HallOfFame(5)
-    pop, log = algorithms.eaSimple(pop, toolbox, 0.5, 0.1, 50, stats=mstats,
+    pop, log = algorithms.eaSimple(pop, toolbox, 0.5, 0.1, 10, stats=mstats,
                                    halloffame=hof, verbose=True)
 
 

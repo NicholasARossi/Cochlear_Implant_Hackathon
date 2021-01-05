@@ -1,5 +1,5 @@
 
-from pesq import pesq
+#from pesq import pesq
 from scipy.io.wavfile import read as wavread
 import numpy as np
 from scipy import interpolate
@@ -31,7 +31,8 @@ def compute_wavfile_delta(reference,reference_rate,output,output_rate,newrate=16
     '''
     ref_remastered = convert_sample_rate(reference, reference_rate,newrate=newrate)
     output_remastered = convert_sample_rate(output, output_rate,newrate=newrate)
-    return pesq(newrate, ref_remastered, output_remastered, function)
+    pass
+    #return pesq(newrate, ref_remastered, output_remastered, function)
 
 
 def wavefile_MSE(reference,reference_rate,output,output_rate):
