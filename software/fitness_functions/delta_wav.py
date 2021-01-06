@@ -58,4 +58,4 @@ def wavefile_max_xcor(reference,reference_rate,output,output_rate):
     a = (a - np.mean(a)) / (np.std(a) * len(a))
     b = (b - np.mean(b)) / (np.std(b))
     c = np.correlate(a, b, 'full')
-    return max(c)
+    return max(c[min_len-1000:min_len+1000])

@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
     #pset.addPrimitive(vector_divide, [VectorClass,float], VectorClass)
 
-    pset.addPrimitive(vector_medfilter,[VectorClass,int],VectorClass)
+    #pset.addPrimitive(vector_medfilter,[VectorClass,int],VectorClass)
     pset.addPrimitive(pass_primitive,[int],int)
     pset.addPrimitive(pass_primitive,[float],float)
 
