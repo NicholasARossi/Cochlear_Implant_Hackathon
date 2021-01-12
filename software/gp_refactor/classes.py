@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 class FitnessWrapper:
-    def __init__(self, wavefile_path=os.path.abspath('../../sample_data/sentence1_55_clean.wav')):
+    def __init__(self, wavefile_path):
 
         self.wavefile_path=wavefile_path
 
@@ -44,29 +44,50 @@ class FitnessWrapper:
         self.transformed_data=transform(vc).data
 
 
-    def convert_elgram(self,traceback=None):
+    def convert_elgram(self):
+        '''
+        What the hell is going on here? El grams must sum to 0, and must be sparse to make computation easier.
 
+        '''
 
 
 
         ### normalize rows (they need to sum to 0)
         for row in range(self.transformed_data.shape[0]):
-            values=self.transformed_data[row,:].reshape(-1,1)
+            values=np.round(self.transformed_data[row,:].reshape(-1,1)).astype('int')
+
+
+            # using a standard scaler to get the values close to 0
             scaler = StandardScaler(with_std=False)
-            #scaler = StandardScaler()
             scaler = scaler.fit(values)
             new_values=scaler.transform(values).ravel()
-            if max(new_values)<1 and max(new_values)!=0:
-                #print('new normals')
-                new_values/=max(new_values)
-                new_values*=400
-            self.transformed_data[row,:]=new_values
+            if max(new_values)!=0:
+                maxval=abs(max(new_values,key=abs))
+                new_values = (new_values / maxval) * 500
 
-        # if np.sum(np.sum(self.transformed_data, 1)) > 1:
-        #     print('debug')
+            # making the values integers that are mostly zeros.
+            rounded_vect=np.around(new_values,-1)
+            deficit=np.sum(rounded_vect)
+            def_sign=np.sign(deficit)
+
+            if def_sign==-1:
+                choices=np.argwhere(rounded_vect!=0)
+                corrections=np.random.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
+                for c in corrections:
+                    rounded_vect[c]+=1
+
+            else:
+                choices=np.argwhere(rounded_vect!=0)
+                corrections=np.random.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
+                for c in corrections:
+                    rounded_vect[c]-=1
+            if sum(rounded_vect)!=0:
+                print('warning -failed')
+            self.transformed_data[row,:]=rounded_vect
 
 
-        # convert to elgram type
+
+
         self.elGram =  self.transformed_data
 
     def score_elgram(self):
@@ -86,7 +107,7 @@ class FitnessWrapper:
 
     def score_new_transform(self,transform,traceback=None):
         self.run_transform(transform)
-        self.convert_elgram(traceback=traceback)
+        self.convert_elgram()
         return self.score_elgram()
 
 

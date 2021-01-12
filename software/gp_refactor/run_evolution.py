@@ -6,12 +6,12 @@ import time
 import datetime
 from toolboxes import all_primitives,filters_only
 
-def main(verbose=True):
+def main(wavefile_path,   verbose=True):
     total_time = time.time()
 
-    toolbox,mstats,fw=all_primitives()
+    toolbox,mstats,fw=all_primitives(wavefile_path)
     # Start a new evolution
-    population = toolbox.population(n=300)
+    population = toolbox.population(n=50)
     start_gen = 0
     end_gen=30
     halloffame = tools.HallOfFame(maxsize=1)
@@ -22,7 +22,6 @@ def main(verbose=True):
 
 
     for gen in range(start_gen, end_gen):
-        gen_time=time.time()
         population = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.1)
 
         # Evaluate the individuals with an invalid fitness
@@ -78,4 +77,7 @@ def main(verbose=True):
                 pickle.dump(cp, cp_file)
 
 if __name__ == '__main__':
-    main()
+    import os
+    wavefile_path = os.path.abspath('../../sample_data/bladerunner_replicant_test.wav')
+
+    main(wavefile_path)
