@@ -4,12 +4,12 @@ import numpy as np
 import random
 import time
 import datetime
-from toolboxes import create_toolbox,filters_only
+from toolboxes import all_primitives,filters_only
 
 def main(verbose=True):
     total_time = time.time()
 
-    toolbox,mstats,fw=filters_only()
+    toolbox,mstats,fw=all_primitives()
     # Start a new evolution
     population = toolbox.population(n=300)
     start_gen = 0
