@@ -72,7 +72,6 @@ class FitnessWrapper:
     def score_elgram(self):
 
         if np.sum(np.sum(self.elGram, 1))>1 or np.max(self.elGram)==0:
-            print('normalization failed')
             self.score = 0
             return self.score
         else:

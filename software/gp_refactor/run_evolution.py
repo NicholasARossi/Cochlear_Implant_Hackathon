@@ -11,9 +11,9 @@ def main(verbose=True):
 
     toolbox,mstats,fw=filters_only()
     # Start a new evolution
-    population = toolbox.population(n=3)
+    population = toolbox.population(n=300)
     start_gen = 0
-    end_gen=300
+    end_gen=30
     halloffame = tools.HallOfFame(maxsize=1)
 
 
@@ -56,7 +56,7 @@ def main(verbose=True):
         population = toolbox.select(population, k=len(population))
 
 
-        if gen % 10 == 0:
+        if gen % 5 == 0:
 
             for example in halloffame:
                 transform = toolbox.compile(expr=example)
