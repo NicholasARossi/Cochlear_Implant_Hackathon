@@ -5,7 +5,6 @@ import numpy as np
 import itertools
 from classes import FitnessWrapper,VectorClass,MatrixClass
 from primitives import *
-from scoop import futures
 
 
 
@@ -64,18 +63,14 @@ def create_toolbox():
 
     toolbox = base.Toolbox()
     toolbox.register("expr_init", gp.genHalfAndHalf, pset=pset, min_=1, max_=3)
-    # pool = multiprocessing.Pool()
-    # toolbox.register("map", pool.map)
 
-    # toolbox.register("map", futures.map)
 
     # Structure initializers
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr_init)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
-    toolbox.register("map", futures.map)
 
-    def evaluate_sybolic_transform(individual, fw):
+    def evaluate_symbolic_transform(individual, fw):
         ## investigate with gp.graph(individual)
 
         transform = toolbox.compile(expr=individual)
@@ -83,7 +78,7 @@ def create_toolbox():
         return score,
 
 
-    toolbox.register("evaluate", evaluate_sybolic_transform, fw=fw)
+    toolbox.register("evaluate", evaluate_symbolic_transform, fw=fw)
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", gp.cxOnePoint)
     toolbox.register("expr_mut", gp.genFull, min_=0, max_=3)
