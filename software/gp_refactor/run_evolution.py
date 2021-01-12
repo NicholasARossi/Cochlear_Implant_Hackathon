@@ -3,14 +3,15 @@ from toolboxes import create_toolbox
 from deap import algorithms, tools,gp
 import numpy as np
 import random
+from tqdm import tqdm
 
 def main():
 
     toolbox,mstats,fw=create_toolbox()
     # Start a new evolution
-    population = toolbox.population(n=20)
+    population = toolbox.population(n=50)
     start_gen = 0
-    end_gen=50
+    end_gen=300
     halloffame = tools.HallOfFame(maxsize=1)
 
 
@@ -18,7 +19,7 @@ def main():
 
 
 
-    for gen in range(start_gen, end_gen):
+    for gen in tqdm(range(start_gen, end_gen)):
         population = algorithms.varAnd(population, toolbox, cxpb=0.1, mutpb=0.1)
 
         # Evaluate the individuals with an invalid fitness
@@ -36,7 +37,6 @@ def main():
 
 
         if gen % 10 == 0:
-            print(record)
 
             for example in halloffame:
                 transform = toolbox.compile(expr=example)
