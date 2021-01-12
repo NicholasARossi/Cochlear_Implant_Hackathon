@@ -1,15 +1,17 @@
 import pickle
-from toolboxes import create_toolbox
 from deap import algorithms, tools,gp
 import numpy as np
 import random
-from tqdm import tqdm
+import time
+import datetime
+from toolboxes import create_toolbox,filters_only
 
-def main():
+def main(verbose=True):
+    total_time = time.time()
 
-    toolbox,mstats,fw=create_toolbox()
+    toolbox,mstats,fw=filters_only()
     # Start a new evolution
-    population = toolbox.population(n=50)
+    population = toolbox.population(n=3)
     start_gen = 0
     end_gen=300
     halloffame = tools.HallOfFame(maxsize=1)
@@ -19,20 +21,38 @@ def main():
 
 
 
-    for gen in tqdm(range(start_gen, end_gen)):
-        population = algorithms.varAnd(population, toolbox, cxpb=0.1, mutpb=0.1)
+    for gen in range(start_gen, end_gen):
+        gen_time=time.time()
+        population = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.1)
 
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in population if not ind.fitness.valid]
-        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+
+
+        # evaluate the fitnesses of the individuals
+        fitnesses=[]
+        for ind in invalid_ind:
+            # some solutions produce non rational answers
+            try:
+                fitnesses.append(toolbox.evaluate(ind))
+            except:
+                fitnesses.append((0,))
 
         for ind, fit in zip(invalid_ind, fitnesses):
+
             ind.fitness.values = fit
+
 
         halloffame.update(population)
         record = mstats.compile(population)
+        now=time.time()
+        time_run=int(now-total_time)
+        time_remaining=int((time_run/(gen-start_gen+1))*(end_gen-gen))
+        record.update({'time':{'total':datetime.timedelta(seconds=time_run),
+                               'remaining':datetime.timedelta(seconds=time_remaining)}})
         logbook.record(gen=gen, evals=len(invalid_ind), **record)
-
+        if verbose==True:
+            print(logbook.stream)
         population = toolbox.select(population, k=len(population))
 
 
