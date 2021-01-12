@@ -10,7 +10,7 @@ from primitives import *
 
 
 
-def create_toolbox():
+def all_primitives():
     fw = FitnessWrapper()
 
     og_vect = VectorClass(fw.prepped_data, fw.prepped_rate)
@@ -62,7 +62,7 @@ def create_toolbox():
     creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
-    toolbox.register("expr_init", gp.genHalfAndHalf, pset=pset, min_=1, max_=3)
+    toolbox.register("expr_init", gp.genHalfAndHalf, pset=pset, min_=1, max_=4)
 
 
     # Structure initializers
@@ -81,7 +81,7 @@ def create_toolbox():
     toolbox.register("evaluate", evaluate_symbolic_transform, fw=fw)
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", gp.cxOnePoint)
-    toolbox.register("expr_mut", gp.genFull, min_=0, max_=3)
+    toolbox.register("expr_mut", gp.genFull, min_=0, max_=5)
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
     toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=17))
