@@ -13,6 +13,23 @@ def vector_medfilter(vc, integer):
     vc.data = medfilt(vc.data, oddint)
     return vc
 
+def flex_low_freq(vc,into):
+    fs = vc.frequency
+
+    fc = into  # Cut-off frequency of the filter
+    w = fc / (fs / 2)  # Normalize the frequency
+    b, a = butter(5, w, 'low')
+    vc.data = filtfilt(b, a, vc.data)
+    return vc
+def flex_high_freq(vc,into):
+    fs = vc.frequency
+
+    fc = into  # Cut-off frequency of the filter
+    w = fc / (fs / 2)  # Normalize the frequency
+    b, a = butter(5, w, 'high')
+    vc.data = filtfilt(b, a, vc.data)
+    return vc
+
 
 def vector_low_freq_filter(vc):
     fs = vc.frequency
@@ -89,6 +106,9 @@ def vector_power(vc, x):
     else:
         return vc
 
+def vector_flex_amplify(vc,into):
+    vc.data = np.multiply(vc.data, into)
+    return vc
 
 def vector_amplify(vc):
     vc.data = np.multiply(vc.data, 10)
@@ -138,3 +158,14 @@ def vector_subtract(vc1, vc2):
 
 def pass_primitive(x):
     return x
+
+def phase_shift(vc,shift):
+    y=vc.data
+    y_copy=np.zeros(len(y))
+    y_copy[shift:]=y[:len(y)-shift]
+    vc.data=y_copy
+    return vc
+
+def vector_super_amplify(vc):
+    vc.data = np.multiply(vc.data, 100)
+    return vc
