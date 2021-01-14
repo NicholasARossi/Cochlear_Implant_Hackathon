@@ -6,19 +6,22 @@ import time
 import datetime
 from toolboxes import all_primitives,filters_only
 
-def main(wavefile_path,   verbose=True):
+def main(wavefile_path,   verbose=True,optimization='maximum'):
     total_time = time.time()
 
     toolbox,mstats,fw=all_primitives(wavefile_path)
     # Start a new evolution
-    population = toolbox.population(n=50)
+    population = toolbox.population(n=3)
     start_gen = 0
-    end_gen=30
-    halloffame = tools.HallOfFame(maxsize=1)
-
+    end_gen=5
+    # halloffame = tools.HallOfFame(maxsize=1)
+    if optimization=='maximum':
+        bad_val=0
+    else:
+        bad_val=10000000
 
     logbook = tools.Logbook()
-
+    best_individual={'score':0,'individual':''}
 
 
     for gen in range(start_gen, end_gen):
@@ -30,19 +33,34 @@ def main(wavefile_path,   verbose=True):
 
         # evaluate the fitnesses of the individuals
         fitnesses=[]
+
+
         for ind in invalid_ind:
             # some solutions produce non rational answers
             try:
-                fitnesses.append(toolbox.evaluate(ind))
+                transform = toolbox.compile(expr=ind)
+                score = fw.score_new_transform(transform)
+                if np.isnnan(score)==True:
+                    score=bad_val
+                fitnesses.append((score,))
             except:
-                fitnesses.append((0,))
+                fitnesses.append((bad_val,))
 
         for ind, fit in zip(invalid_ind, fitnesses):
+            if optimization=='maximum':
+                if fit[0]>best_individual['score']:
+                    best_individual['score']=fit[0]
+                    best_individual['individual']=ind
+
+            else:
+                if fit[0]<best_individual['score']:
+                    best_individual['score']=fit[0]
+                    best_individual['individual']=ind
 
             ind.fitness.values = fit
 
 
-        halloffame.update(population)
+        # halloffame.update(population)
         record = mstats.compile(population)
         now=time.time()
         time_run=int(now-total_time)
@@ -55,22 +73,21 @@ def main(wavefile_path,   verbose=True):
         population = toolbox.select(population, k=len(population))
 
 
-        if gen % 5 == 0:
+        if (gen+1)%5==0:
+            transform = toolbox.compile(expr=best_individual['individual'])
+            score = fw.score_new_transform(transform)
 
-            for example in halloffame:
-                transform = toolbox.compile(expr=example)
-                score = fw.score_new_transform(transform)
+            results_scores = {
+                'audio_input': fw.original_data,
+                'frequency_input': fw.original_rate,
+                'audio_out': fw.audioOut,
+                'frequency_out': fw.audioFs,
+                'elgram':fw.elGram,
+                'score': score
 
-                results_scores = {
-                    'audio_input': fw.original_data,
-                    'frequency_input': fw.original_rate,
-                    'audio_out': fw.audioOut,
-                    'frequency_out': fw.audioFs,
-                    'score': score
+            }
 
-                }
-
-            cp = dict(population=population, generation=gen, halloffame=halloffame,result_scores=results_scores,
+            cp = dict(population=population, generation=gen, halloffame=best_individual,result_scores=results_scores,
                       logbook=logbook, rndstate=random.getstate())
 
             with open(f"checkpoints/{gen}_checkpoint.pkl", "wb") as cp_file:
@@ -80,4 +97,4 @@ if __name__ == '__main__':
     import os
     wavefile_path = os.path.abspath('../../sample_data/bladerunner_replicant_test.wav')
 
-    main(wavefile_path)
+    main(wavefile_path,optimization='minimum')
