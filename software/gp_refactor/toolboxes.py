@@ -10,7 +10,7 @@ from primitives import *
 
 
 
-def all_primitives(wavefile_path):
+def all_primitives(wavefile_path,optimization='maximum'):
 
     fw = FitnessWrapper(wavefile_path)
 
@@ -23,29 +23,19 @@ def all_primitives(wavefile_path):
 
     ### vector vector primitives
     pset.addPrimitive(norm_vector_convolve, [VectorClass, VectorClass], VectorClass)
-    # pset.addPrimitive(vector_add,[VectorClass,VectorClass],VectorClass)
-    # pset.addPrimitive(vector_subtract,[VectorClass,VectorClass],VectorClass)
+    #pset.addPrimitive(vector_add,[VectorClass,VectorClass],VectorClass)
+    #pset.addPrimitive(vector_subtract,[VectorClass,VectorClass],VectorClass)
 
     ### vector value primitives
     pset.addPrimitive(vector_multiply, [VectorClass, float], VectorClass)
-    # pset.addPrimitive(vector_power, [VectorClass, float], VectorClass)
 
     pset.addPrimitive(norm_hilbert, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_low_freq_filter, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_super_low_freq_filter, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_ultra_low_freq_filter, [VectorClass], VectorClass)
+    pset.addPrimitive(flex_low_freq, [VectorClass,int], VectorClass)
+    pset.addPrimitive(flex_high_freq, [VectorClass,int], VectorClass)
+    pset.addPrimitive(vector_flex_amplify, [VectorClass,int], VectorClass)
+    pset.addPrimitive(phase_shift, [VectorClass,int], VectorClass)
 
-    pset.addPrimitive(vector_high_freq_filter, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_super_high_freq_filter, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_ultra_high_freq_filter, [VectorClass], VectorClass)
 
-    pset.addPrimitive(vector_amplify, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_super_amplify, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_ultra_amplify, [VectorClass], VectorClass)
-
-    # pset.addPrimitive(vector_divide, [VectorClass,float], VectorClass)
-
-    # pset.addPrimitive(vector_medfilter,[VectorClass,int],VectorClass)
     pset.addPrimitive(pass_primitive, [int], int)
     pset.addPrimitive(pass_primitive, [float], float)
 
@@ -54,16 +44,23 @@ def all_primitives(wavefile_path):
 
     ### ephermerals and terminals
     pset.addTerminal(og_mat, MatrixClass)
-    pset.addEphemeralConstant("rand_int", lambda: random.randrange(1, 101 + 1, 20), int)
+
+    pset.addTerminal(1000, int)
+    pset.addTerminal(500, int)
+    pset.addTerminal(200, int)
+    pset.addTerminal(100, int)
     pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 5), float)
 
     pset.renameArguments(ARG0="input_audio")
-
-    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-    creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
+    if optimization=='maximum':
+        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+        creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
+    else:
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+        creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
 
     toolbox = base.Toolbox()
-    toolbox.register("expr_init", gp.genHalfAndHalf, pset=pset, min_=1, max_=3)
+    toolbox.register("expr_init", gp.genFull, pset=pset, min_=1, max_=5)
 
 
     # Structure initializers
@@ -71,15 +68,7 @@ def all_primitives(wavefile_path):
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
 
-    def evaluate_symbolic_transform(individual, fw):
-        ## investigate with gp.graph(individual)
 
-        transform = toolbox.compile(expr=individual)
-        score = fw.score_new_transform(transform, traceback=individual)
-        return score,
-
-
-    toolbox.register("evaluate", evaluate_symbolic_transform, fw=fw)
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", gp.cxOnePoint)
     toolbox.register("expr_mut", gp.genFull, min_=0, max_=5)
@@ -166,7 +155,7 @@ def filters_only(wavefile_path):
         ## investigate with gp.graph(individual)
 
         transform = toolbox.compile(expr=individual)
-        score = fw.score_new_transform(transform, traceback=individual)
+        score = fw.score_new_transform(transform)
         return score,
 
 

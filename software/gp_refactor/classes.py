@@ -5,7 +5,7 @@ import sys
 sys.path.append(os.path.abspath('../AB_imports/'))
 
 from Vocoder.vocoder import vocoderFunc
-from fitness_functions import convert_sample_rate,wavefile_max_xcor
+from fitness_functions import convert_sample_rate,wavefile_max_xcor,fft_MSE
 from sklearn.preprocessing import StandardScaler
 
 
@@ -44,11 +44,12 @@ class FitnessWrapper:
         self.transformed_data=transform(vc).data
 
 
-    def convert_elgram(self):
+    def convert_elgram(self,rounding=False):
         '''
         What the hell is going on here? El grams must sum to 0, and must be sparse to make computation easier.
 
         '''
+        r = np.random.RandomState(8888)
 
 
 
@@ -65,25 +66,28 @@ class FitnessWrapper:
                 maxval=abs(max(new_values,key=abs))
                 new_values = (new_values / maxval) * 500
 
-            # making the values integers that are mostly zeros.
-            rounded_vect=np.around(new_values,-1)
-            deficit=np.sum(rounded_vect)
-            def_sign=np.sign(deficit)
+            if rounding==True:
+                # making the values integers that are mostly zeros.
+                rounded_vect=np.around(new_values,-1)
+                deficit=np.sum(rounded_vect)
+                def_sign=np.sign(deficit)
 
-            if def_sign==-1:
-                choices=np.argwhere(rounded_vect!=0)
-                corrections=np.random.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
-                for c in corrections:
-                    rounded_vect[c]+=1
+                if def_sign==-1:
+                    choices=np.argwhere(rounded_vect!=0)
+                    corrections=r.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
+                    for c in corrections:
+                        rounded_vect[c]+=1
 
+                else:
+                    choices=np.argwhere(rounded_vect!=0)
+                    corrections=r.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
+                    for c in corrections:
+                        rounded_vect[c]-=1
+                if sum(rounded_vect)!=0:
+                    print('warning -failed')
+                self.transformed_data[row,:]=rounded_vect
             else:
-                choices=np.argwhere(rounded_vect!=0)
-                corrections=np.random.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
-                for c in corrections:
-                    rounded_vect[c]-=1
-            if sum(rounded_vect)!=0:
-                print('warning -failed')
-            self.transformed_data[row,:]=rounded_vect
+                self.transformed_data[row, :] = new_values
 
 
 
@@ -92,22 +96,22 @@ class FitnessWrapper:
 
     def score_elgram(self):
 
-        if np.sum(np.sum(self.elGram, 1))>1 or np.max(self.elGram)==0:
-            self.score = 0
-            return self.score
-        else:
 
-            self.audioOut, self.audioFs = vocoderFunc(self.elGram, saveOutput=False)
 
-            if np.isnan(self.audioOut).any()==False:
-                self.score=wavefile_max_xcor(self.original_data,self.original_rate,self.audioOut,self.audioFs)
-            else:
-                self.score=0
-            return self.score
+        self.audioOut, self.audioFs = vocoderFunc(self.elGram, saveOutput=False)
+        #print(f'{np.std(audioOut)},{np.max(audioOut)},{np.min(audioOut)},{np.median(audioOut)}')
 
-    def score_new_transform(self,transform,traceback=None):
+        score=fft_MSE(self.original_data,self.original_rate,self.audioOut,self.audioFs)
+        #score=wavefile_max_xcor(self.original_data,self.original_rate,self.audioOut,self.audioFs)
+
+        return score
+
+    def score_new_transform(self,transform):
         self.run_transform(transform)
         self.convert_elgram()
+        #print(f'{np.std(self.elGram)},{np.max(self.elGram)},{np.min(self.elGram)},{np.median(self.elGram)}')
+
+
         return self.score_elgram()
 
 

@@ -71,11 +71,7 @@ class FitnessWrapper:
                 new_values*=400
             self.transformed_data[row,:]=new_values
 
-        # if np.sum(np.sum(self.transformed_data, 1)) > 1:
-        #     print('debug')
 
-
-        # convert to elgram type
         self.elGram =  self.transformed_data
 
     def score_elgram(self):
@@ -204,6 +200,25 @@ if __name__ == '__main__':
             return vc
         else:
             return vc
+    def vector_power(vc,x):
+        if x is not None:
+            vc.data=np.power(vc.data,x)
+            return vc
+        else:
+            return vc
+
+    def vector_amplify(vc):
+        vc.data = np.multiply(vc.data, 10)
+        return vc
+
+    def vector_super_amplify(vc):
+        vc.data = np.multiply(vc.data, 100)
+        return vc
+
+    def vector_ultra_amplify(vc):
+        vc.data = np.multiply(vc.data, 1000)
+        return vc
+
 
     def vector_divide(vc,x):
         if x is not None:
@@ -248,6 +263,8 @@ if __name__ == '__main__':
 
     ### vector value primitives
     pset.addPrimitive(vector_multiply, [VectorClass,float], VectorClass)
+    pset.addPrimitive(vector_power, [VectorClass,float], VectorClass)
+
     pset.addPrimitive(norm_hilbert,[VectorClass],VectorClass)
     pset.addPrimitive(vector_low_freq_filter, [VectorClass], VectorClass)
     pset.addPrimitive(vector_super_low_freq_filter, [VectorClass], VectorClass)
@@ -256,6 +273,12 @@ if __name__ == '__main__':
     pset.addPrimitive(vector_high_freq_filter, [VectorClass], VectorClass)
     pset.addPrimitive(vector_super_high_freq_filter, [VectorClass], VectorClass)
     pset.addPrimitive(vector_ultra_high_freq_filter, [VectorClass], VectorClass)
+
+
+    pset.addPrimitive(vector_amplify, [VectorClass], VectorClass)
+    pset.addPrimitive(vector_super_amplify, [VectorClass], VectorClass)
+    pset.addPrimitive(vector_ultra_amplify, [VectorClass], VectorClass)
+
 
     #pset.addPrimitive(vector_divide, [VectorClass,float], VectorClass)
 
@@ -270,7 +293,7 @@ if __name__ == '__main__':
     ### ephermerals and terminals
     pset.addTerminal(og_mat,MatrixClass)
     pset.addEphemeralConstant("rand_int", lambda: random.randrange(1, 101+1, 20), int)
-    pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 1.5), float)
+    pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 5), float)
 
     pset.renameArguments(ARG0="input_audio")
 
@@ -279,7 +302,7 @@ if __name__ == '__main__':
     creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
-    toolbox.register("expr_init", gp.genFull, pset=pset, min_=1, max_=3)
+    toolbox.register("expr_init", gp.genHalfAndHalf, pset=pset, min_=1, max_=3)
     #pool = multiprocessing.Pool()
     #toolbox.register("map", pool.map)
 

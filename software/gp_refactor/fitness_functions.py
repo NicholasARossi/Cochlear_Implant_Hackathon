@@ -40,3 +40,10 @@ def wavefile_max_xcor(reference,reference_rate,output,output_rate):
     b = (b - np.mean(b)) / (np.std(b))
     c = np.correlate(a, b, 'full')
     return max(c[min_len-1000:min_len+1000])
+
+def fft_MSE(reference,reference_rate,output,output_rate):
+    ref_remastered = convert_sample_rate(reference, reference_rate)
+    output_remastered = convert_sample_rate(output, output_rate)
+    ref_fft=np.fft.rfft(ref_remastered / (2 ** 15 - 1))[:5000]
+    output_fft=np.fft.rfft(output_remastered)[:5000]
+    return np.sum(abs(ref_fft-output_fft))
