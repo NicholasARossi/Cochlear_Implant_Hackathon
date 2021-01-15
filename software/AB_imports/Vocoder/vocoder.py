@@ -14,8 +14,8 @@ import scipy.interpolate
 import h5py
 from .vocoderTools import ElFieldToActivity,ActivityToPower, NeurToBinMatrix, generate_cfs
 
-
 def vocoderFunc(electrodogram,**kwargs):
+    np.random.seed(88)
 
     audioFs = kwargs.get('audioFs',48000)
     saveOutput = kwargs.get('saveOutput',False)
