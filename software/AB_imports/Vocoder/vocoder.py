@@ -16,7 +16,7 @@ from .vocoderTools import ElFieldToActivity,ActivityToPower, NeurToBinMatrix, ge
 
 
 def vocoderFunc(electrodogram,**kwargs):
-
+    np.random.seed(88)
     audioFs = kwargs.get('audioFs',48000)
     saveOutput = kwargs.get('saveOutput',False)
     outputFile = kwargs.get('outputFile',None)
