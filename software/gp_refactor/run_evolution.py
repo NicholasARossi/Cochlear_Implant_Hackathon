@@ -1,19 +1,18 @@
 import pickle
 from deap import algorithms, tools,gp
-import numpy as np
 import random
 import time
 import datetime
-from toolboxes import all_primitives,filters_only
+from toolboxes import all_primitives
+import pandas as pd
 
-def main(wavefile_path,   verbose=True,optimization='maximum'):
+def main(wavefile_path, pop_size=50,end_gen=30,verbose=True,optimization='maximum'):
     total_time = time.time()
 
-    toolbox,mstats,fw=all_primitives(wavefile_path)
+    toolbox,mstats,fw=all_primitives(wavefile_path,optimization=optimization)
     # Start a new evolution
-    population = toolbox.population(n=3)
+    population = toolbox.population(n=pop_size)
     start_gen = 0
-    end_gen=5
     # halloffame = tools.HallOfFame(maxsize=1)
     if optimization=='maximum':
         bad_val=0
@@ -21,7 +20,7 @@ def main(wavefile_path,   verbose=True,optimization='maximum'):
         bad_val=10000000
 
     logbook = tools.Logbook()
-    best_individual={'score':0,'individual':''}
+    best_individual={'score':bad_val,'individual':''}
 
 
     for gen in range(start_gen, end_gen):
@@ -40,7 +39,7 @@ def main(wavefile_path,   verbose=True,optimization='maximum'):
             try:
                 transform = toolbox.compile(expr=ind)
                 score = fw.score_new_transform(transform)
-                if np.isnnan(score)==True:
+                if pd.isnull(score)==True:
                     score=bad_val
                 fitnesses.append((score,))
             except:
@@ -97,4 +96,4 @@ if __name__ == '__main__':
     import os
     wavefile_path = os.path.abspath('../../sample_data/bladerunner_replicant_test.wav')
 
-    main(wavefile_path,optimization='minimum')
+    main(wavefile_path,pop_size=3,end_gen=2)
