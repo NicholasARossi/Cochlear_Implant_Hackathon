@@ -7,6 +7,10 @@ from toolboxes import all_primitives
 import pandas as pd
 
 def main(wavefile_path, pop_size=50,end_gen=30,verbose=True,optimization='maximum'):
+    if not os.path.exists('checkpoints'):
+        os.makedirs('checkpoints')
+
+
     total_time = time.time()
 
     toolbox,mstats,fw=all_primitives(wavefile_path,optimization=optimization)
