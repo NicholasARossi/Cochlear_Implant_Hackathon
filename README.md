@@ -9,6 +9,7 @@ This solution relies hevily on the [DEAP](https://deap.readthedocs.io/en/master/
 Navigate to the ```gp_refactor``` folder and run the following actions.
 ```bash
 conda create -n deep_vibe python=3.7
+brew install portaudio
 python -m pip install -r requirements.txt 
 ```
 
