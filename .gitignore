@@ -1,5 +1,5 @@
 # Environments
-*venv/*
+venv*
 .python-version
 
 # mac Os
