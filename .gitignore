@@ -1,5 +1,5 @@
 # Environments
-venv/
+*venv/*
 .python-version
 
 # mac Os
@@ -10,6 +10,8 @@ venv/
 
 __pycache__/
 __pycache__
+.ipynb_checkpoints
+
 # scripts
 calculate*
 /tests/error_testing.py
