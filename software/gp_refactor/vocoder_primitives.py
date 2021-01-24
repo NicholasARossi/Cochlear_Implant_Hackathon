@@ -1,6 +1,6 @@
 import numpy as np
-from scipy.signal import convolve,medfilt,hilbert,butter,filtfilt,deconvolve,fftconvolve
-from classes import VectorClass,MatrixClass,NoiseClass
+from scipy.signal import convolve,medfilt,hilbert,butter,filtfilt,deconvolve
+from classes import VectorClass
 
 def generate_sin_wav(vc,fc):
     w = (vc.frequency / 2) / fc  # Normalize the frequency
@@ -175,59 +175,4 @@ def phase_shift(vc,shift):
 
 def vector_super_amplify(vc):
     vc.data = np.multiply(vc.data, 100)
-    return vc
-
-
-def convolve_ramp(mc,rc):
-
-    for row_idx in range(16):
-
-        convolved = fftconvolve(mc.data[row_idx,:], rc.data[row_idx,:], mode='same')
-        convolved /= np.max(convolved)
-        convolved *= max(mc.data[row_idx,:])
-        mc.data[row_idx,:] = convolved
-    return MatrixClass(mc.data)
-
-
-def convolve_ramp_reverse(mc,rc):
-
-    for row_idx in range(16):
-
-        convolved = fftconvolve(mc.data[row_idx,:], rc.data[15-row_idx,:], mode='same')
-        convolved /= np.max(convolved)
-        convolved *= max(mc.data[row_idx,:])
-        mc.data[row_idx,:] = convolved
-    return mc
-
-def norm_vector_convolve_fft(vc1, vc2):
-    convolved = fftconvolve(vc1.data, vc2.data, mode='same')
-    convolved /= np.max(convolved)
-    convolved *= max(vc2.data)
-    vc1.data = convolved
-    return vc1
-
-
-def fftnoise(f):
-    f = np.array(f, dtype='complex')
-    Np = (len(f) - 1) // 2
-    phases = np.random.rand(Np) * 2 * np.pi
-    phases = np.cos(phases) + 1j * np.sin(phases)
-    f[1:Np+1] *= phases
-    f[-1:-1-Np:-1] = np.conj(f[1:Np+1])
-    return np.fft.ifft(f).real
-
-def band_limited_noise(min_freq, max_freq, samples=1024, samplerate=1):
-    freqs = np.abs(np.fft.fftfreq(samples, 1/samplerate))
-    f = np.zeros(samples)
-    idx = np.where(np.logical_and(freqs>=min_freq, freqs<=max_freq))[0]
-    f[idx] = 1
-    return fftnoise(f)
-
-
-def return_band_noise(freq):
-    x=band_limited_noise(freq, freq + 10, 55556, 55556)
-    return NoiseClass(x)
-
-def invert_vector(vc):
-    vc.data = vc.data*-1
     return vc

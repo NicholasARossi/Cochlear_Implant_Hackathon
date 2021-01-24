@@ -132,3 +132,12 @@ class VectorClass:
 
         self.data=data
         self.frequency=frequency
+
+class VocoderRamp:
+    def __init__(self, data_loc):
+        self.data=np.load(data_loc).T
+
+
+class NoiseClass:
+    def __init__(self, data):
+        self.data=data

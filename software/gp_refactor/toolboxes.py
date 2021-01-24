@@ -3,8 +3,9 @@ from deap import algorithms, base, creator, tools, gp
 import operator
 import numpy as np
 import itertools
-from classes import FitnessWrapper,VectorClass,MatrixClass
+from classes import FitnessWrapper,VectorClass,MatrixClass,VocoderRamp,NoiseClass
 from primitives import *
+#from vocoder_primitives import convolve_ramp,convolve_ramp_reverse,norm_vector_convolve_fft
 
 
 
@@ -15,16 +16,24 @@ def all_primitives(wavefile_path,optimization='maximum'):
     fw = FitnessWrapper(wavefile_path)
 
     og_vect = VectorClass(fw.prepped_data, fw.prepped_rate)
-
     og_mat = MatrixClass(np.vstack([fw.prepped_data] * 16))
+    og_ramp=VocoderRamp('../AB_imports/Vocoder/norm_ramp.npy')
+    white_noise=NoiseClass(np.random.normal(0, 1, 1000))
+
 
     pset = gp.PrimitiveSetTyped("MAIN", [VectorClass], MatrixClass)
     pset.addPrimitive(MatrixClass.create_matrix, list(itertools.repeat(VectorClass, 16)), MatrixClass)
 
     ### vector vector primitives
-    pset.addPrimitive(norm_vector_convolve, [VectorClass, VectorClass], VectorClass)
-    #pset.addPrimitive(vector_add,[VectorClass,VectorClass],VectorClass)
-    #pset.addPrimitive(vector_subtract,[VectorClass,VectorClass],VectorClass)
+    pset.addPrimitive(norm_vector_convolve_fft, [VectorClass, NoiseClass], VectorClass)
+    pset.addPrimitive(norm_vector_convolve_fft, [VectorClass, VectorClass], VectorClass)
+
+    pset.addPrimitive(convolve_ramp,[MatrixClass,VocoderRamp],MatrixClass)
+    pset.addPrimitive(convolve_ramp_reverse,[MatrixClass,VocoderRamp],MatrixClass)
+    pset.addPrimitive(invert_vector,[VectorClass],VectorClass)
+    pset.addPrimitive(return_band_noise,[int],NoiseClass)
+    pset.addPrimitive(vector_add,[VectorClass,VectorClass],VectorClass)
+    pset.addPrimitive(vector_subtract,[VectorClass,VectorClass],VectorClass)
 
     ### vector value primitives
     pset.addPrimitive(vector_multiply, [VectorClass, float], VectorClass)
@@ -34,7 +43,13 @@ def all_primitives(wavefile_path,optimization='maximum'):
     pset.addPrimitive(flex_high_freq, [VectorClass,int], VectorClass)
     pset.addPrimitive(vector_flex_amplify, [VectorClass,int], VectorClass)
     pset.addPrimitive(phase_shift, [VectorClass,int], VectorClass)
+    #pset.addPrimitive(convolve_ramp,[MatrixClass,VocoderRamp],MatrixClass)
 
+
+    ### pass values
+    pset.addPrimitive(pass_primitive, [VocoderRamp], VocoderRamp)
+    pset.addPrimitive(pass_primitive, [VectorClass], VectorClass)
+    pset.addPrimitive(pass_primitive, [NoiseClass], NoiseClass)
 
     pset.addPrimitive(pass_primitive, [int], int)
     pset.addPrimitive(pass_primitive, [float], float)
@@ -43,12 +58,13 @@ def all_primitives(wavefile_path,optimization='maximum'):
     pset.addPrimitive(operator.neg, [float], float)
 
     ### ephermerals and terminals
-    pset.addTerminal(og_mat, MatrixClass)
+    pset.addTerminal(white_noise, NoiseClass,name='white_noise')
+    pset.addTerminal(og_mat, MatrixClass,name='default_mat')
+    pset.addTerminal(og_ramp, VocoderRamp,name='ramp')
 
-    pset.addTerminal(1000, int)
-    pset.addTerminal(500, int)
-    pset.addTerminal(200, int)
-    pset.addTerminal(100, int)
+    for z in np.arange(100,2000,100):
+        pset.addTerminal(int(z), int)
+
     pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 5), float)
 
     pset.renameArguments(ARG0="input_audio")
@@ -62,7 +78,7 @@ def all_primitives(wavefile_path,optimization='maximum'):
         creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
 
     toolbox = base.Toolbox()
-    toolbox.register("expr_init", gp.genFull, pset=pset, min_=1, max_=5)
+    toolbox.register("expr_init", gp.genFull, pset=pset, min_=1, max_=3)
 
 
     # Structure initializers
@@ -73,7 +89,7 @@ def all_primitives(wavefile_path,optimization='maximum'):
 
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", gp.cxOnePoint)
-    toolbox.register("expr_mut", gp.genFull, min_=0, max_=5)
+    toolbox.register("expr_mut", gp.genFull, min_=3, max_=6)
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
     toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=17))
@@ -94,20 +110,30 @@ def all_primitives(wavefile_path,optimization='maximum'):
 
 
 
-def fast_compute(wavefile_path):
+def vocoder_rev_eng(wavefile_path):
     fw = FitnessWrapper(wavefile_path)
 
     og_vect = VectorClass(fw.prepped_data, fw.prepped_rate)
 
     og_mat = MatrixClass(np.vstack([fw.prepped_data] * 16))
 
+    og_ramp=VocoderRamp('../AB_imports/Vocoder/norm_ramp.npy')
+    white_noise=NoiseClass(np.random.normal(0, 1, 1000))
+
     pset = gp.PrimitiveSetTyped("MAIN", [VectorClass], MatrixClass)
     pset.addPrimitive(MatrixClass.create_matrix, list(itertools.repeat(VectorClass, 16)), MatrixClass)
+    pset.addPrimitive(norm_vector_convolve_fft, [VectorClass, 'white_noise'], VectorClass)
 
+    # pset.addPrimitive(convolve_ramp,[MatrixClass,VocoderRamp],MatrixClass)
+    # pset.addPrimitive(convolve_ramp_reverse,[MatrixClass,VocoderRamp],MatrixClass)
+    #
+    pset.addPrimitive(pass_primitive, [VocoderRamp], VocoderRamp)
+    pset.addPrimitive(pass_primitive, [NoiseClass], NoiseClass)
+    pset.addPrimitive(pass_primitive, [VectorClass], VectorClass)
 
-    pset.addPrimitive(vector_low_freq_filter, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_super_low_freq_filter, [VectorClass], VectorClass)
-    pset.addPrimitive(vector_ultra_low_freq_filter, [VectorClass], VectorClass)
+    pset.addTerminal(white_noise,NoiseClass,name='white_noise')
+
+    pset.addTerminal(og_ramp, VocoderRamp,name='ramp')
 
 
 
@@ -120,7 +146,7 @@ def fast_compute(wavefile_path):
     creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
-    toolbox.register("expr_init", gp.genHalfAndHalf, pset=pset, min_=1, max_=2)
+    toolbox.register("expr_init", gp.genHalfAndHalf, pset=pset, min_=1, max_=5)
 
 
     # Structure initializers
@@ -131,7 +157,7 @@ def fast_compute(wavefile_path):
 
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", gp.cxOnePoint)
-    toolbox.register("expr_mut", gp.genFull, min_=0, max_=1)
+    toolbox.register("expr_mut", gp.genFull, min_=0, max_=5)
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
     toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=17))
