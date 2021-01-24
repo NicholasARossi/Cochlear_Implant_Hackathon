@@ -78,7 +78,7 @@ def all_primitives(wavefile_path,optimization='maximum'):
         creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
 
     toolbox = base.Toolbox()
-    toolbox.register("expr_init", gp.genFull, pset=pset, min_=1, max_=3)
+    toolbox.register("expr_init", gp.genHalfAndHalf, pset=pset, min_=1, max_=4)
 
 
     # Structure initializers
@@ -89,7 +89,7 @@ def all_primitives(wavefile_path,optimization='maximum'):
 
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", gp.cxOnePoint)
-    toolbox.register("expr_mut", gp.genFull, min_=3, max_=6)
+    toolbox.register("expr_mut", gp.genFull, min_=3, max_=5)
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
     toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=17))

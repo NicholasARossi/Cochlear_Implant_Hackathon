@@ -116,7 +116,7 @@ def main(wavefile_path, pop_size=50,end_gen=30,verbose=True,optimization='maximu
             cp = dict(population=population, generation=gen, halloffame=best_individual,result_scores=results_scores,
                       logbook=logbook, rndstate=random.getstate())
 
-            with open(f"checkpoints/{gen}_checkpoint.pkl", "wb") as cp_file:
+            with open(f"{outpath}/{gen}_checkpoint.pkl", "wb") as cp_file:
                 pickle.dump(cp, cp_file)
 
 if __name__ == '__main__':
