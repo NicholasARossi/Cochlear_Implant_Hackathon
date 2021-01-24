@@ -3,7 +3,7 @@ venv*
 .python-version
 
 # mac Os
-*.DS_Store
+.DS_Store
 *.idea/
 *.pytest_cache
 *.pyc
