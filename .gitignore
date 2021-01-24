@@ -7,6 +7,7 @@ venv*
 *.idea/
 *.pytest_cache
 *.pyc
+.vscode
 
 __pycache__/
 __pycache__
