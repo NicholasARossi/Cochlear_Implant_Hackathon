@@ -89,7 +89,7 @@ class Evolve:
         '''
         population = algorithms.varAnd(population, self.toolbox, cxpb=0.5, mutpb=0.1)
 
-        # Evaluate the individuals with an invalid fitness
+        # Select to re-evaluate the indices with an invalid fitness
         invalid_ind = [ind for ind in population if not ind.fitness.valid]
         # fitnesses = [self._evaluate_fitness(ind) for ind in invalid_ind]
         fitnesses = self.pool.map(self._evaluate_fitness, invalid_ind)
@@ -97,8 +97,10 @@ class Evolve:
 
         # Generate and store results
         self._update_logbook(population, start_time, gen, len(invalid_ind))
+        # Write logfile
         if self.verbose:
             self.logfile.writelines(self.logbook.stream)
+            self.logfile.write("\n")
         population = self.toolbox.select(population, k=len(population))
 
         # After every 5 iterations create a checkpoint
