@@ -13,7 +13,14 @@ from software.gp_refactor.toolboxes import all_primitives
 
 
 class Evolve:
-    def __init__(self, wavefile_path, pop_size=50, end_gen=30, verbose=True, optimization='maximum'):
+    def __init__(
+        self,
+        wavefile_path: str,
+        pop_size: int = 50,
+        end_gen: int = 30,
+        verbose: bool = True,
+        optimization: str = 'maximum'
+    ) -> None:
         '''
         :param wavefile_path: path (str), path to audio file
         :param pop_size: int, Population size for GP
@@ -41,7 +48,11 @@ class Evolve:
         if not os.path.exists('checkpoints'):
             os.makedirs('checkpoints')
 
+        # Initialize multiple process pool
         self.pool = Pool()
+
+        # Start a logging file if needed
+        self.logfile = open(os.path.abspath('./checkpoints/logfile.txt'), 'w+')
 
     @property
     def bad_value(self):
@@ -70,6 +81,8 @@ class Evolve:
         for gen in range(self.end_gen):
             population = self._evolve(population, gen, start_time)
 
+        self.logfile.close()
+
     def _evolve(self, population, gen, start_time):
         '''
         Evolve first generation
@@ -85,7 +98,7 @@ class Evolve:
         # Generate and store results
         self._update_logbook(population, start_time, gen, len(invalid_ind))
         if self.verbose:
-            print(self.logbook.stream)
+            self.logfile.writelines(self.logbook.stream)
         population = self.toolbox.select(population, k=len(population))
 
         # After every 5 iterations create a checkpoint
