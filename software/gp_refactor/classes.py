@@ -5,7 +5,7 @@ import sys
 patha=os.path.abspath('../AB_imports/')
 sys.path.append(patha)
 from Vocoder.vocoder import vocoderFunc
-from fitness_functions import convert_sample_rate,wavefile_max_xcor,fft_MSE
+from fitness_functions import convert_sample_rate,wavefile_max_xcor,fft_MSE,fft_correlation,compute_wavfile_delta
 from sklearn.preprocessing import StandardScaler
 
 
@@ -104,8 +104,9 @@ class FitnessWrapper:
         #TODO figure out the best possible fitness function
         #score=fft_MSE(self.original_data,self.original_rate,self.audioOut,self.audioFs)
         score=wavefile_max_xcor(self.original_data,self.original_rate,self.audioOut,self.audioFs)
+        score2=compute_wavfile_delta(self.original_data,self.original_rate,self.audioOut,self.audioFs)
 
-        return score
+        return score,score2
 
     def score_new_transform(self,transform):
         self.run_transform(transform)

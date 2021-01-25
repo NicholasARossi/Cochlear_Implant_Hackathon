@@ -281,5 +281,7 @@ def vocoderFunc(electrodogram,**kwargs):
            
     return(audioOut,audioFs.astype(int))
     
-
+# if __name__ == '__main__':
+#     example_elgram=np.load('example_elgramp.npy')
+#     vocoderFunc()
     

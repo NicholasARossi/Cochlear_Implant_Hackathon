@@ -3,7 +3,7 @@ from deap import algorithms, tools,gp
 import random
 import time
 import datetime
-from toolboxes import all_primitives,vocoder_rev_eng
+from toolboxes import all_primitives,debugger
 import pandas as pd
 
 
@@ -24,7 +24,7 @@ def get_deep_vibe_logo():
         print(line)
 
 
-def main(wavefile_path, pop_size=50,end_gen=30,verbose=True,optimization='maximum',outpath='checkpoints'):
+def main(wavefile_path, pop_size=50,end_gen=30,max_depth=4,verbose=True,optimization='maximum',outpath='checkpoints'):
     if not os.path.exists(outpath):
         os.makedirs(outpath)
 
@@ -32,7 +32,7 @@ def main(wavefile_path, pop_size=50,end_gen=30,verbose=True,optimization='maximu
     total_time = time.time()
 
     #toolbox,mstats,fw=all_primitives(wavefile_path,optimization=optimization)
-    toolbox,mstats,fw=all_primitives(wavefile_path)
+    toolbox,mstats,fw=all_primitives(wavefile_path,max_depth=max_depth)
 
     # Start a new evolution
     population = toolbox.population(n=pop_size)
@@ -62,20 +62,21 @@ def main(wavefile_path, pop_size=50,end_gen=30,verbose=True,optimization='maximu
             # # some solutions produce non rational answers
             try:
                 transform = toolbox.compile(expr=ind)
-                score = fw.score_new_transform(transform)
-                if pd.isnull(score)==True:
+                score,score2 = fw.score_new_transform(transform)
+                if pd.isnull(score)==True or pd.isnull(score2)==True:
                     score=bad_val
-                fitnesses.append((score,))
+                    score2 = bad_val
+                fitnesses.append((score,score2,))
             except:
-                fitnesses.append((bad_val,))
+                fitnesses.append((bad_val,bad_val,))
             # transform = toolbox.compile(expr=ind)
-            # score = fw.score_new_transform(transform)
-            # fitnesses.append((score,))
+            # score,score2 = fw.score_new_transform(transform)
+            # fitnesses.append((score,score2,))
 
         for ind, fit in zip(invalid_ind, fitnesses):
             if optimization=='maximum':
-                if fit[0]>best_individual['score']:
-                    best_individual['score']=fit[0]
+                if (fit[0]+fit[1])>best_individual['score']:
+                    best_individual['score']=(fit[0]+fit[1])
                     best_individual['individual']=ind
 
             else:
@@ -121,28 +122,32 @@ def main(wavefile_path, pop_size=50,end_gen=30,verbose=True,optimization='maximu
 
 if __name__ == '__main__':
     import os
-    import argparse
+    # import argparse
+    #
+    # get_deep_vibe_logo()
+    #
+    # parser = argparse.ArgumentParser()
+    #
+    # parser.add_argument('-w', '--wav_file',type=str, default='../../sample_data/bladerunner_replicant_test.wav',help='path file for analysis')
+    # parser.add_argument('-p', '--pop_size',type=int, default=3,help='size of population')
+    # parser.add_argument('-g', '--num_gen',type=int, default=2,help='number of generations')
+    # parser.add_argument('-d', '--max_depth',type=int, default=4,help='max depth of trees during generation')
+    #
+    # parser.add_argument('-o', '--outpath',type=str, default='checkpoints',help='output directory')
+    # parser.add_argument('-v', '--verbose',type=bool, default=True,help='verbose')
+    #
+    # args = parser.parse_args()
+    #
+    # job_args = os.path.abspath(args.wav_file)
+    #
+    # job_kwargs = {
+    #     'pop_size': args.pop_size,
+    #     'end_gen':args.num_gen,
+    #     'outpath':args.outpath,
+    #     'verbose':args.verbose,
+    # }
+    #
+    #
+    # main(job_args, **job_kwargs)
 
-    get_deep_vibe_logo()
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-w', '--wav_file',type=str, default='../../sample_data/bladerunner_replicant_test.wav',help='path file for analysis')
-    parser.add_argument('-p', '--pop_size',type=int, default=3,help='size of population')
-    parser.add_argument('-g', '--num_gen',type=int, default=2,help='number of generations')
-    parser.add_argument('-o', '--outpath',type=str, default='checkpoints',help='output directory')
-    parser.add_argument('-v', '--verbose',type=bool, default=True,help='verbose')
-
-    args = parser.parse_args()
-
-    job_args = os.path.abspath(args.wav_file)
-
-    job_kwargs = {
-        'pop_size': args.pop_size,
-        'end_gen':args.num_gen,
-        'outpath':args.outpath,
-        'verbose':args.verbose,
-    }
-
-
-    main(job_args, **job_kwargs)
+    main('../../sample_data/bladerunner_replicant_test.wav', pop_size=3,end_gen=2,max_depth=4,verbose=True,optimization='maximum',outpath='checkpoints')
