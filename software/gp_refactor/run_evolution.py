@@ -100,7 +100,7 @@ def main(wavefile_path, pop_size=50,end_gen=30,max_depth=4,verbose=True,optimiza
         population = toolbox.select(population, k=len(population))
 
 
-        if (gen+1)%5==0:
+        if (gen+1)%2==0:
             transform = toolbox.compile(expr=best_individual['individual'])
             score = fw.score_new_transform(transform)
 
@@ -122,32 +122,32 @@ def main(wavefile_path, pop_size=50,end_gen=30,max_depth=4,verbose=True,optimiza
 
 if __name__ == '__main__':
     import os
-    # import argparse
-    #
-    # get_deep_vibe_logo()
-    #
-    # parser = argparse.ArgumentParser()
-    #
-    # parser.add_argument('-w', '--wav_file',type=str, default='../../sample_data/bladerunner_replicant_test.wav',help='path file for analysis')
-    # parser.add_argument('-p', '--pop_size',type=int, default=3,help='size of population')
-    # parser.add_argument('-g', '--num_gen',type=int, default=2,help='number of generations')
-    # parser.add_argument('-d', '--max_depth',type=int, default=4,help='max depth of trees during generation')
-    #
-    # parser.add_argument('-o', '--outpath',type=str, default='checkpoints',help='output directory')
-    # parser.add_argument('-v', '--verbose',type=bool, default=True,help='verbose')
-    #
-    # args = parser.parse_args()
-    #
-    # job_args = os.path.abspath(args.wav_file)
-    #
-    # job_kwargs = {
-    #     'pop_size': args.pop_size,
-    #     'end_gen':args.num_gen,
-    #     'outpath':args.outpath,
-    #     'verbose':args.verbose,
-    # }
-    #
-    #
-    # main(job_args, **job_kwargs)
+    import argparse
 
-    main('../../sample_data/bladerunner_replicant_test.wav', pop_size=3,end_gen=2,max_depth=4,verbose=True,optimization='maximum',outpath='checkpoints')
+    get_deep_vibe_logo()
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-w', '--wav_file',type=str, default='../../sample_data/bladerunner_replicant_test.wav',help='path file for analysis')
+    parser.add_argument('-p', '--pop_size',type=int, default=3,help='size of population')
+    parser.add_argument('-g', '--num_gen',type=int, default=2,help='number of generations')
+    parser.add_argument('-d', '--max_depth',type=int, default=4,help='max depth of trees during generation')
+
+    parser.add_argument('-o', '--outpath',type=str, default='checkpoints',help='output directory')
+    parser.add_argument('-v', '--verbose',type=bool, default=True,help='verbose')
+
+    args = parser.parse_args()
+
+    job_args = os.path.abspath(args.wav_file)
+
+    job_kwargs = {
+        'pop_size': args.pop_size,
+        'end_gen':args.num_gen,
+        'outpath':args.outpath,
+        'verbose':args.verbose,
+    }
+
+
+    main(job_args, **job_kwargs)
+
+    #main('../../sample_data/bladerunner_replicant_test.wav', pop_size=3,end_gen=2,max_depth=4,verbose=True,optimization='maximum',outpath='checkpoints')
