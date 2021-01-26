@@ -1,6 +1,8 @@
 import numpy as np
+
 from scipy.signal import convolve,medfilt,hilbert,butter,filtfilt,deconvolve,fftconvolve
 from classes import VectorClass,MatrixClass,NoiseClass
+
 
 def generate_sin_wav(vc,fc):
     w = (vc.frequency / 2) / fc  # Normalize the frequency
@@ -14,13 +16,14 @@ def round_up_to_odd(f):
 
 
 def vector_medfilter(vc, integer):
-    ## requires odd integers
+    # requires odd integers
     oddint = round_up_to_odd(integer)
 
     vc.data = medfilt(vc.data, oddint)
     return vc
 
-def flex_low_freq(vc,into):
+
+def flex_low_freq(vc, into):
     fs = vc.frequency
 
     fc = into  # Cut-off frequency of the filter
@@ -28,7 +31,9 @@ def flex_low_freq(vc,into):
     b, a = butter(5, w, 'low')
     vc.data = filtfilt(b, a, vc.data)
     return vc
-def flex_high_freq(vc,into):
+
+
+def flex_high_freq(vc, into):
     fs = vc.frequency
 
     fc = into  # Cut-off frequency of the filter
@@ -113,9 +118,11 @@ def vector_power(vc, x):
     else:
         return vc
 
-def vector_flex_amplify(vc,into):
+
+def vector_flex_amplify(vc, into):
     vc.data = np.multiply(vc.data, into)
     return vc
+
 
 def vector_amplify(vc):
     vc.data = np.multiply(vc.data, 10)
@@ -166,16 +173,19 @@ def vector_subtract(vc1, vc2):
 def pass_primitive(x):
     return x
 
-def phase_shift(vc,shift):
-    y=vc.data
-    y_copy=np.zeros(len(y))
-    y_copy[shift:]=y[:len(y)-shift]
-    vc.data=y_copy
+
+def phase_shift(vc, shift):
+    y = vc.data
+    y_copy = np.zeros(len(y))
+    y_copy[shift:] = y[:len(y)-shift]
+    vc.data = y_copy
     return vc
+
 
 def vector_super_amplify(vc):
     vc.data = np.multiply(vc.data, 100)
     return vc
+
 
 
 def convolve_ramp(mc,rc):
@@ -231,3 +241,4 @@ def return_band_noise(freq):
 def invert_vector(vc):
     vc.data = vc.data*-1
     return vc
+
