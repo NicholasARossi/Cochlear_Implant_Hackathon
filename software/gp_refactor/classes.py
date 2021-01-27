@@ -99,6 +99,9 @@ class FitnessWrapper:
 
     @staticmethod
     def _round(values):
+        '''
+        Scale the array such that the overall sum = 0
+        '''
         r = np.random.RandomState(8888)
 
         # Rounding the values to the nearest 10s
