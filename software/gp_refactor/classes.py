@@ -89,38 +89,35 @@ class FitnessWrapper:
         return new_values
 
     @staticmethod
+    def _normalize_and_scale(values, scaling_value=500):
+        # Pick max based on absolute
+        maxval = abs(max(values, key=abs))
+        # Scale to 500, as recommended
+        values = (values / maxval) * scaling_value
+
+        return values
+
+    @staticmethod
     def _round(values):
+        '''
+        Scale the array such that the overall sum = 0
+        '''
         r = np.random.RandomState(8888)
 
-        # making the values integers that are mostly zeros.
+        # Rounding the values to the nearest 10s
         rounded_vect = np.around(values, -1)
         deficit = np.sum(rounded_vect)
-        def_sign = np.sign(deficit)
+        def_sign = np.sign(deficit)  # -1 if deficit is negative else positive
 
-        if def_sign == -1:
-            choices = np.argwhere(rounded_vect != 0)
-            corrections = r.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
-            for c in corrections:
-                rounded_vect[c] += 1
-        else:
-            choices = np.argwhere(rounded_vect != 0)
-            corrections = r.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
-            for c in corrections:
-                rounded_vect[c] -= 1
+        # Randomly select indices to increase/decrease by 1 based on deficit negative or positive resp.
+        choices = np.argwhere(rounded_vect != 0)
+        corrections = r.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
+        rounded_vect[corrections] += (-1 * def_sign)
 
         if sum(rounded_vect) != 0:
             print('Warning: rounding failed')
 
         return rounded_vect
-
-    @staticmethod
-    def _normalize_and_scale(values):
-        # Pick max based on absolute
-        maxval = abs(max(values, key=abs))
-        # Scale to 500, as recommended
-        values = (values / maxval) * 500
-
-        return values
 
     def _score_elgram(self):
 
