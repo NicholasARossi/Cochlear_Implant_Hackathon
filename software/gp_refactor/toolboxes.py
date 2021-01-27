@@ -111,8 +111,7 @@ def debugger(wavefile_path, optimization='maximum', max_depth=4):
 
     og_vect = VectorClass(fw.prepped_data, fw.prepped_rate)
     og_mat = MatrixClass(np.vstack([fw.prepped_data] * 16))
-    og_ramp = VocoderRamp(
-        '/Users/nicholas.rossi/Documents/Personal/Cochlear_Implant_Hackathon/software/AB_imports/Vocoder/norm_ramp.npy')
+    og_ramp = VocoderRamp(os.path.abspath('./software/AB_imports/Vocoder/norm_ramp.npy'))
     white_noise = NoiseClass(np.random.normal(0, 1, 1000))
 
     pset = gp.PrimitiveSetTyped("MAIN", [VectorClass], MatrixClass)
