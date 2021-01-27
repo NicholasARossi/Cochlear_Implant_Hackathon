@@ -58,7 +58,6 @@ class FitnessWrapper:
         '''
         What the hell is going on here? El grams must sum to 0, and must be sparse to make computation easier.
         '''
-        r = np.random.RandomState(8888)
 
         # normalize rows (they need to sum to 0)
         for row in range(self.transformed_data.shape[0]):
@@ -91,6 +90,8 @@ class FitnessWrapper:
 
     @staticmethod
     def _round(values):
+        r = np.random.RandomState(8888)
+
         # making the values integers that are mostly zeros.
         rounded_vect = np.around(values, -1)
         deficit = np.sum(rounded_vect)
