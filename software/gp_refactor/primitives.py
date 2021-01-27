@@ -1,8 +1,7 @@
 import numpy as np
 
-from scipy.signal import convolve,medfilt,hilbert,butter,filtfilt,deconvolve,fftconvolve
-from classes import VectorClass,MatrixClass,NoiseClass
-
+from scipy.signal import convolve,medfilt,hilbert,butter,filtfilt,fftconvolve
+from software.gp_refactor.classes import VectorClass,MatrixClass,NoiseClass
 
 def generate_sin_wav(vc,fc):
     w = (vc.frequency / 2) / fc  # Normalize the frequency

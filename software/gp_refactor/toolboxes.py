@@ -1,28 +1,23 @@
 import random
 import operator
-import numpy as np
 import itertools
-
-from classes import FitnessWrapper,VectorClass,MatrixClass,VocoderRamp,NoiseClass
-from primitives import *
-#from vocoder_primitives import convolve_ramp,convolve_ramp_reverse,norm_vector_convolve_fft
-
-
-
+import os
 from deap import algorithms, base, creator, tools, gp
 
-from software.gp_refactor.classes import FitnessWrapper, VectorClass, MatrixClass
+from software.gp_refactor.classes import FitnessWrapper, VectorClass, MatrixClass,VocoderRamp,NoiseClass
 from software.gp_refactor.primitives import *
 
 
-def all_primitives(wavefile_path, optimization='maximum'):
+def all_primitives(wavefile_path, optimization='maximum',max_depth=4):
 
 
     fw = FitnessWrapper(wavefile_path)
 
     og_vect = VectorClass(fw.prepped_data, fw.prepped_rate)
     og_mat = MatrixClass(np.vstack([fw.prepped_data] * 16))
-    og_ramp=VocoderRamp('../AB_imports/Vocoder/norm_ramp.npy')
+    og_ramp=VocoderRamp(os.path.abspath('../AB_imports/Vocoder/norm_ramp.npy'))
+
+    #og_ramp=VocoderRamp(os.path.abspath('software/AB_imports/Vocoder/norm_ramp.npy'))
     white_noise=NoiseClass(np.random.normal(0, 1, 1000))
 
 
