@@ -46,27 +46,27 @@ def wavefile_max_xcor(reference, reference_rate, output, output_rate):
 def fft_MSE(reference, reference_rate, output, output_rate):
     ref_remastered = convert_sample_rate(reference, reference_rate)
     output_remastered = convert_sample_rate(output, output_rate)
-    ref_fft=np.fft.rfft(ref_remastered / (2 ** 15 - 1))[:5000]
-    output_fft=np.fft.rfft(output_remastered)[:5000]
+    ref_fft = np.fft.rfft(ref_remastered / (2 ** 15 - 1))[:5000]
+    output_fft = np.fft.rfft(output_remastered)[:5000]
     return np.sum(abs(ref_fft-output_fft))
 
 
-def fft_correlation(reference,reference_rate,output,output_rate):
+def fft_correlation(reference, reference_rate, output, output_rate):
     ref_remastered = convert_sample_rate(reference, reference_rate)
     output_remastered = convert_sample_rate(output, output_rate)
-    a=ref_remastered
-    b=output_remastered
+    a = ref_remastered
+    b = output_remastered
     a = (a - np.mean(a)) / (np.std(a) * len(a))
     b = (b - np.mean(b)) / (np.std(b))
-    a=abs(np.fft.rfft(a))
+    a = abs(np.fft.rfft(a))
     b = abs(np.fft.rfft(b))
 
-    min_len=min([len(a),len(b)])
+    min_len = min([len(a), len(b)])
 
-    return pearsonr(a[:min_len],b[:min_len])[0]
+    return pearsonr(a[:min_len], b[:min_len])[0]
 
 
-def compute_wavfile_delta(reference,reference_rate,output,output_rate,newrate=16000,function='nb'):
+def compute_wavfile_delta(reference, reference_rate, output, output_rate, newrate=16000, function='nb'):
     '''
     Simple function for comparing the relatedness of two distinct wave files
     :param reference: the original wave file values
@@ -77,14 +77,12 @@ def compute_wavfile_delta(reference,reference_rate,output,output_rate,newrate=16
     :param function: the PESQ cost method
     :return:
     '''
-    ref_remastered = convert_sample_rate(reference, reference_rate,newrate=newrate)
-    output_remastered = convert_sample_rate(output, output_rate,newrate=newrate)
+    ref_remastered = convert_sample_rate(reference, reference_rate, newrate=newrate)
+    output_remastered = convert_sample_rate(output, output_rate, newrate=newrate)
 
+    pesq_max = pesq(newrate, ref_remastered, ref_remastered, function)
+    pesq_obs = pesq(newrate, ref_remastered, output_remastered, function)
 
-    pesq_max=pesq(newrate, ref_remastered, ref_remastered, function)
-    pesq_obs=pesq(newrate, ref_remastered, output_remastered, function)
-
-    output_val=(pesq_obs)/(pesq_max)
+    output_val = (pesq_obs)/(pesq_max)
 
     return output_val
-

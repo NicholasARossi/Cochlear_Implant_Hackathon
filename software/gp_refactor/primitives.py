@@ -1,14 +1,15 @@
 import numpy as np
 
-from scipy.signal import convolve,medfilt,hilbert,butter,filtfilt,fftconvolve
-from software.gp_refactor.classes import VectorClass,MatrixClass,NoiseClass
+from scipy.signal import convolve, medfilt, hilbert, butter, filtfilt, fftconvolve
+from software.gp_refactor.classes import VectorClass, MatrixClass, NoiseClass
 
-def generate_sin_wav(vc,fc):
+
+def generate_sin_wav(vc, fc):
     w = (vc.frequency / 2) / fc  # Normalize the frequency
     sin_wav = np.sin(np.arange(len(vc.data)) / w)
 
-
     return VectorClass(sin_wav, vc.frequency)
+
 
 def round_up_to_odd(f):
     return int(np.ceil(f) // 2 * 2 + 1)
@@ -186,27 +187,27 @@ def vector_super_amplify(vc):
     return vc
 
 
-
-def convolve_ramp(mc,rc):
+def convolve_ramp(mc, rc):
 
     for row_idx in range(16):
 
-        convolved = fftconvolve(mc.data[row_idx,:], rc.data[row_idx,:], mode='same')
+        convolved = fftconvolve(mc.data[row_idx, :], rc.data[row_idx, :], mode='same')
         convolved /= np.max(convolved)
-        convolved *= max(mc.data[row_idx,:])
-        mc.data[row_idx,:] = convolved
+        convolved *= max(mc.data[row_idx, :])
+        mc.data[row_idx, :] = convolved
     return MatrixClass(mc.data)
 
 
-def convolve_ramp_reverse(mc,rc):
+def convolve_ramp_reverse(mc, rc):
 
     for row_idx in range(16):
 
-        convolved = fftconvolve(mc.data[row_idx,:], rc.data[15-row_idx,:], mode='same')
+        convolved = fftconvolve(mc.data[row_idx, :], rc.data[15-row_idx, :], mode='same')
         convolved /= np.max(convolved)
-        convolved *= max(mc.data[row_idx,:])
-        mc.data[row_idx,:] = convolved
+        convolved *= max(mc.data[row_idx, :])
+        mc.data[row_idx, :] = convolved
     return mc
+
 
 def norm_vector_convolve_fft(vc1, vc2):
     convolved = fftconvolve(vc1.data, vc2.data, mode='same')
@@ -225,19 +226,20 @@ def fftnoise(f):
     f[-1:-1-Np:-1] = np.conj(f[1:Np+1])
     return np.fft.ifft(f).real
 
+
 def band_limited_noise(min_freq, max_freq, samples=1024, samplerate=1):
     freqs = np.abs(np.fft.fftfreq(samples, 1/samplerate))
     f = np.zeros(samples)
-    idx = np.where(np.logical_and(freqs>=min_freq, freqs<=max_freq))[0]
+    idx = np.where(np.logical_and(freqs >= min_freq, freqs <= max_freq))[0]
     f[idx] = 1
     return fftnoise(f)
 
 
 def return_band_noise(freq):
-    x=band_limited_noise(freq, freq + 10, 55556, 55556)
+    x = band_limited_noise(freq, freq + 10, 55556, 55556)
     return NoiseClass(x)
+
 
 def invert_vector(vc):
     vc.data = vc.data*-1
     return vc
-

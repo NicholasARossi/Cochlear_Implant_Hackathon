@@ -1,9 +1,13 @@
+from software.gp_refactor.toolboxes import all_primitives
+from pathos.multiprocessing import ProcessingPool as Pool
+from deap import algorithms, tools
+import pandas as pd
+import os
+import argparse
 import pickle
 import random
 import time
 import datetime
-
-
 
 
 def get_deep_vibe_logo():
@@ -23,18 +27,6 @@ def get_deep_vibe_logo():
         print(line)
 
 
-
-import argparse
-import os
-
-
-import pandas as pd
-from deap import algorithms, tools
-from pathos.multiprocessing import ProcessingPool as Pool
-
-from software.gp_refactor.toolboxes import all_primitives
-
-
 class Evolve:
     def __init__(
         self,
@@ -43,8 +35,8 @@ class Evolve:
         end_gen: int = 30,
         verbose: bool = True,
         optimization: str = 'maximum',
-        max_depth: int =3,
-        checkpoint_folder :str = 'checkpoints',
+        max_depth: int = 3,
+        checkpoint_folder: str = 'checkpoints',
         checkpoint_interval: int = 5
     ) -> None:
         '''
@@ -53,6 +45,9 @@ class Evolve:
         :param end_gen: int, Number of evolutions for the GP
         :param verbose: bool, verbose output True/False
         :param optimization: str, optimization method
+        :param max_depth: int, Max depth of tree
+        :param checkpoint_folder: str, folder for saving checkpoint pickle
+        :param checkpoint_interval: int, intervals to save checkpoints at
         '''
         # Init basic params
         self.wavefile_path = wavefile_path
@@ -60,11 +55,9 @@ class Evolve:
         self.end_gen = end_gen
         self.verbose = True
         self.optimization = optimization
-        self.max_depth=max_depth
-        self.checkpoint_folder=checkpoint_folder
-        self.checkpoint_interval=checkpoint_interval
-
-
+        self.max_depth = max_depth
+        self.checkpoint_folder = checkpoint_folder
+        self.checkpoint_interval = checkpoint_interval
 
         # Initialize logbook
         self.logbook = tools.Logbook()
@@ -151,10 +144,10 @@ class Evolve:
             score = self.fw.score_new_transform(transform)
             print(score)
             if pd.isna(score):
-                return (self.bad_value,self.bad_value)
+                return (self.bad_value, self.bad_value)
             return score
         except:
-            return (self.bad_value,self.bad_value)
+            return (self.bad_value, self.bad_value)
 
     def _update_score_dictionary(self, invalid_ind, fitnesses):
         for ind, fit in zip(invalid_ind, fitnesses):
@@ -192,15 +185,12 @@ class Evolve:
         return {'time': {'total': datetime.timedelta(seconds=time_run),
                          'remaining': datetime.timedelta(seconds=time_remaining)}}
 
-
-
     def _update_checkpoint(self, population, gen):
         '''
         Create checkpoint
         '''
         transform = self.toolbox.compile(expr=self.best_individual['individual'])
         score = self.fw.score_new_transform(transform)
-
 
         # Generate result dict
         results_scores = self.result_dict.update({'score': score})
@@ -211,7 +201,6 @@ class Evolve:
         # Save cp in a file
         with open(f"{self.checkpoint_folder}/{gen}_checkpoint.pkl", "wb") as cp_file:
             pickle.dump(cp, cp_file)
-
 
 
 if __name__ == '__main__':
@@ -230,20 +219,16 @@ if __name__ == '__main__':
                         help="Verbose")
     parser.add_argument('-o', '--optimization', dest="optimization", type=str, default='maximum',
                         help="Optimization method")
-
     parser.add_argument('-d', '--max_depth', dest="max_depth", type=int, default=3,
                         help="maximum depth of tree during generation")
-
     parser.add_argument('-c', '--checkpoint_folder', dest="checkpoint_folder", type=str, default='checkpoints',
                         help="output folder for checkpoints")
-
     parser.add_argument('-i', '--checkpoint_interval', dest="checkpoint_interval", type=int, default=5,
                         help="save the checkpoints every n generations")
 
     args = parser.parse_args()
 
     run_evolution = Evolve(args.wavefile_path, pop_size=args.pop_size, end_gen=args.end_gen,
-                           verbose=args.verbose, optimization=args.optimization,max_depth=args.max_depth,
-                           checkpoint_folder=args.checkpoint_folder,checkpoint_interval=args.checkpoint_interval)
+                           verbose=args.verbose, optimization=args.optimization, max_depth=args.max_depth,
+                           checkpoint_folder=args.checkpoint_folder, checkpoint_interval=args.checkpoint_interval)
     run_evolution.run()
-

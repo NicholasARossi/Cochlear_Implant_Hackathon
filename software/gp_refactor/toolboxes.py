@@ -4,35 +4,32 @@ import itertools
 import os
 from deap import algorithms, base, creator, tools, gp
 
-from software.gp_refactor.classes import FitnessWrapper, VectorClass, MatrixClass,VocoderRamp,NoiseClass
+from software.gp_refactor.classes import FitnessWrapper, VectorClass, MatrixClass, VocoderRamp, NoiseClass
 from software.gp_refactor.primitives import *
 
 
-def all_primitives(wavefile_path, optimization='maximum',max_depth=4):
-
+def all_primitives(wavefile_path, optimization='maximum', max_depth=4):
 
     fw = FitnessWrapper(wavefile_path)
 
     og_vect = VectorClass(fw.prepped_data, fw.prepped_rate)
     og_mat = MatrixClass(np.vstack([fw.prepped_data] * 16))
-    og_ramp=VocoderRamp(os.path.abspath('../AB_imports/Vocoder/norm_ramp.npy'))
+    og_ramp = VocoderRamp(os.path.abspath('./software/AB_imports/Vocoder/norm_ramp.npy'))
 
-    #og_ramp=VocoderRamp(os.path.abspath('software/AB_imports/Vocoder/norm_ramp.npy'))
-    white_noise=NoiseClass(np.random.normal(0, 1, 1000))
-
+    # og_ramp=VocoderRamp(os.path.abspath('software/AB_imports/Vocoder/norm_ramp.npy'))
+    white_noise = NoiseClass(np.random.normal(0, 1, 1000))
 
     pset = gp.PrimitiveSetTyped("MAIN", [VectorClass], MatrixClass)
     pset.addPrimitive(MatrixClass.create_matrix, list(itertools.repeat(VectorClass, 16)), MatrixClass)
 
-
-    ### vector vector primitives
+    # vector vector primitives
     pset.addPrimitive(norm_vector_convolve_fft, [VectorClass, NoiseClass], VectorClass)
     pset.addPrimitive(norm_vector_convolve_fft, [VectorClass, VectorClass], VectorClass)
 
-    pset.addPrimitive(convolve_ramp,[MatrixClass,VocoderRamp],MatrixClass)
-    pset.addPrimitive(convolve_ramp_reverse,[MatrixClass,VocoderRamp],MatrixClass)
-    pset.addPrimitive(invert_vector,[VectorClass],VectorClass)
-    pset.addPrimitive(return_band_noise,[int],NoiseClass)
+    pset.addPrimitive(convolve_ramp, [MatrixClass, VocoderRamp], MatrixClass)
+    pset.addPrimitive(convolve_ramp_reverse, [MatrixClass, VocoderRamp], MatrixClass)
+    pset.addPrimitive(invert_vector, [VectorClass], VectorClass)
+    pset.addPrimitive(return_band_noise, [int], NoiseClass)
     pset.addPrimitive(norm_vector_convolve, [VectorClass, VectorClass], VectorClass)
 
     # pset.addPrimitive(vector_add,[VectorClass,VectorClass],VectorClass)
@@ -43,18 +40,16 @@ def all_primitives(wavefile_path, optimization='maximum',max_depth=4):
 
     pset.addPrimitive(norm_hilbert, [VectorClass], VectorClass)
 
-    pset.addPrimitive(flex_low_freq, [VectorClass,int], VectorClass)
-    pset.addPrimitive(flex_high_freq, [VectorClass,int], VectorClass)
-    pset.addPrimitive(vector_flex_amplify, [VectorClass,int], VectorClass)
-    pset.addPrimitive(phase_shift, [VectorClass,int], VectorClass)
-    #pset.addPrimitive(convolve_ramp,[MatrixClass,VocoderRamp],MatrixClass)
+    pset.addPrimitive(flex_low_freq, [VectorClass, int], VectorClass)
+    pset.addPrimitive(flex_high_freq, [VectorClass, int], VectorClass)
+    pset.addPrimitive(vector_flex_amplify, [VectorClass, int], VectorClass)
+    pset.addPrimitive(phase_shift, [VectorClass, int], VectorClass)
+    # pset.addPrimitive(convolve_ramp,[MatrixClass,VocoderRamp],MatrixClass)
 
-
-    ### pass values
+    # pass values
     pset.addPrimitive(pass_primitive, [VocoderRamp], VocoderRamp)
     pset.addPrimitive(pass_primitive, [VectorClass], VectorClass)
     pset.addPrimitive(pass_primitive, [NoiseClass], NoiseClass)
-
 
     pset.addPrimitive(pass_primitive, [int], int)
     pset.addPrimitive(pass_primitive, [float], float)
@@ -63,11 +58,11 @@ def all_primitives(wavefile_path, optimization='maximum',max_depth=4):
     pset.addPrimitive(operator.neg, [float], float)
 
     ### ephermerals and terminals
-    pset.addTerminal(white_noise, NoiseClass,name='white_noise')
-    pset.addTerminal(og_mat, MatrixClass,name='default_mat')
-    pset.addTerminal(og_ramp, VocoderRamp,name='ramp')
+    pset.addTerminal(white_noise, NoiseClass, name='white_noise')
+    pset.addTerminal(og_mat, MatrixClass, name='default_mat')
+    pset.addTerminal(og_ramp, VocoderRamp, name='ramp')
 
-    for z in np.arange(10,2010,100):
+    for z in np.arange(10, 2010, 100):
         pset.addTerminal(int(z), int)
 
     pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 5), float)
@@ -75,7 +70,7 @@ def all_primitives(wavefile_path, optimization='maximum',max_depth=4):
     pset.renameArguments(ARG0="input_audio")
     if optimization == 'maximum':
         print('we are currently maximizing')
-        creator.create("FitnessMax", base.Fitness, weights=(1.0,1.0,))
+        creator.create("FitnessMax", base.Fitness, weights=(1.0, 1.0,))
         creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
     else:
         print('we are currently minimizing')
@@ -89,7 +84,6 @@ def all_primitives(wavefile_path, optimization='maximum',max_depth=4):
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr_init)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
-
 
     toolbox.register("select", tools.selNSGA2)
 
@@ -111,29 +105,26 @@ def all_primitives(wavefile_path, optimization='maximum',max_depth=4):
     return toolbox, mstats, fw
 
 
-def debugger(wavefile_path,optimization='maximum',max_depth=4):
+def debugger(wavefile_path, optimization='maximum', max_depth=4):
 
     fw = FitnessWrapper(wavefile_path)
 
     og_vect = VectorClass(fw.prepped_data, fw.prepped_rate)
     og_mat = MatrixClass(np.vstack([fw.prepped_data] * 16))
-    og_ramp=VocoderRamp('/Users/nicholas.rossi/Documents/Personal/Cochlear_Implant_Hackathon/software/AB_imports/Vocoder/norm_ramp.npy')
-    white_noise=NoiseClass(np.random.normal(0, 1, 1000))
-
+    og_ramp = VocoderRamp(
+        '/Users/nicholas.rossi/Documents/Personal/Cochlear_Implant_Hackathon/software/AB_imports/Vocoder/norm_ramp.npy')
+    white_noise = NoiseClass(np.random.normal(0, 1, 1000))
 
     pset = gp.PrimitiveSetTyped("MAIN", [VectorClass], MatrixClass)
     pset.addPrimitive(MatrixClass.create_matrix, list(itertools.repeat(VectorClass, 16)), MatrixClass)
 
-    ### vector vector primitives
+    # vector vector primitives
 
+    # vector value primitives
+    pset.addPrimitive(phase_shift, [VectorClass, int], VectorClass)
+    # pset.addPrimitive(convolve_ramp,[MatrixClass,VocoderRamp],MatrixClass)
 
-
-    ### vector value primitives
-    pset.addPrimitive(phase_shift, [VectorClass,int], VectorClass)
-    #pset.addPrimitive(convolve_ramp,[MatrixClass,VocoderRamp],MatrixClass)
-
-
-    ### pass values
+    # pass values
     pset.addPrimitive(pass_primitive, [VocoderRamp], VocoderRamp)
     pset.addPrimitive(pass_primitive, [VectorClass], VectorClass)
     pset.addPrimitive(pass_primitive, [NoiseClass], NoiseClass)
@@ -141,24 +132,23 @@ def debugger(wavefile_path,optimization='maximum',max_depth=4):
     pset.addPrimitive(pass_primitive, [int], int)
     pset.addPrimitive(pass_primitive, [float], float)
 
-    ### value value primitives
+    # value value primitives
     pset.addPrimitive(operator.neg, [float], float)
 
     ### ephermerals and terminals
-    pset.addTerminal(white_noise, NoiseClass,name='white_noise')
-    pset.addTerminal(og_mat, MatrixClass,name='default_mat')
-    pset.addTerminal(og_ramp, VocoderRamp,name='ramp')
+    pset.addTerminal(white_noise, NoiseClass, name='white_noise')
+    pset.addTerminal(og_mat, MatrixClass, name='default_mat')
+    pset.addTerminal(og_ramp, VocoderRamp, name='ramp')
 
-
-    for z in np.arange(100,2000,100):
+    for z in np.arange(100, 2000, 100):
         pset.addTerminal(int(z), int)
 
     pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 5), float)
 
     pset.renameArguments(ARG0="input_audio")
-    if optimization=='maximum':
+    if optimization == 'maximum':
         print('we are currently maximizing')
-        creator.create("FitnessMax", base.Fitness, weights=(1.0,1.0,))
+        creator.create("FitnessMax", base.Fitness, weights=(1.0, 1.0,))
         creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
     else:
         print('we are currently minimizing')
@@ -172,8 +162,6 @@ def debugger(wavefile_path,optimization='maximum',max_depth=4):
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr_init)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
-
-
 
     toolbox.register("select", tools.selNSGA2)
 

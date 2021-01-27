@@ -5,7 +5,7 @@ from scipy.io import wavfile
 
 from sklearn.preprocessing import StandardScaler
 
-from software.gp_refactor.fitness_functions import convert_sample_rate, wavefile_max_xcor, fft_MSE,compute_wavfile_delta,fft_correlation
+from software.gp_refactor.fitness_functions import convert_sample_rate, wavefile_max_xcor, fft_MSE, compute_wavfile_delta, fft_correlation
 from software.AB_imports.Vocoder.vocoder import vocoderFunc
 
 
@@ -127,14 +127,12 @@ class FitnessWrapper:
         self.audioOut, self.audioFs = vocoderFunc(self.elGram, saveOutput=False)
         # print(f'{np.std(audioOut)},{np.max(audioOut)},{np.min(audioOut)},{np.median(audioOut)}')
 
+        # TODO figure out the best possible fitness function
+        # score=fft_MSE(self.original_data,self.original_rate,self.audioOut,self.audioFs)
+        score = wavefile_max_xcor(self.original_data, self.original_rate, self.audioOut, self.audioFs)
+        score2 = compute_wavfile_delta(self.original_data, self.original_rate, self.audioOut, self.audioFs)
 
-        #TODO figure out the best possible fitness function
-        #score=fft_MSE(self.original_data,self.original_rate,self.audioOut,self.audioFs)
-        score=wavefile_max_xcor(self.original_data,self.original_rate,self.audioOut,self.audioFs)
-        score2=compute_wavfile_delta(self.original_data,self.original_rate,self.audioOut,self.audioFs)
-
-
-        return score,score2
+        return score, score2
 
 
 class MatrixClass:
@@ -148,21 +146,17 @@ class MatrixClass:
         return MatrixClass(matrix)
 
 
-
-        self.data=data
-        self.frequency=frequency
-
 class VocoderRamp:
     def __init__(self, data_loc):
-        self.data=np.load(data_loc).T
+        self.data = np.load(data_loc).T
 
 
 class NoiseClass:
     def __init__(self, data):
-        self.data=data
+        self.data = data
+
 
 class VectorClass:
     def __init__(self, data, frequency):
         self.data = data
         self.frequency = frequency
-
