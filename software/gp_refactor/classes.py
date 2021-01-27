@@ -58,7 +58,6 @@ class FitnessWrapper:
         '''
         What the hell is going on here? El grams must sum to 0, and must be sparse to make computation easier.
         '''
-        r = np.random.RandomState(8888)
 
         # normalize rows (they need to sum to 0)
         for row in range(self.transformed_data.shape[0]):
@@ -66,9 +65,9 @@ class FitnessWrapper:
 
             # Run standard scalar
             new_values = self._get_standard_scalar_transform(values)
-            # Normalize and scale
+            # Normalize and scale to maxval = 500
             if max(new_values) != 0:
-                new_values = self._normalize_and_scale(new_values)
+                new_values = self._normalize_and_scale(new_values, scale_to_val=500)
 
             if rounding == True:
                 self.transformed_data[row, :] = self._round(new_values)
@@ -90,36 +89,34 @@ class FitnessWrapper:
         return new_values
 
     @staticmethod
+    def _normalize_and_scale(values, scale_to_val=500):
+        # Pick max based on absolute
+        maxval = abs(max(values, key=abs))
+        # Scale to 500, as recommended
+        values = (values / maxval) * scale_to_val
+
+        return values
+
+    @staticmethod
     def _round(values):
-        # making the values integers that are mostly zeros.
+        r = np.random.RandomState(8888)
+
+        # Round to the nearest 10
         rounded_vect = np.around(values, -1)
         deficit = np.sum(rounded_vect)
         def_sign = np.sign(deficit)
 
-        if def_sign == -1:
-            choices = np.argwhere(rounded_vect != 0)
-            corrections = r.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
-            for c in corrections:
-                rounded_vect[c] += 1
-        else:
-            choices = np.argwhere(rounded_vect != 0)
-            corrections = r.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
-            for c in corrections:
-                rounded_vect[c] -= 1
+        # Randomly pick indices to increase/decrease by 1 to sum to 0
+        choices = np.argwhere(rounded_vect != 0)
+        corrections = r.choice(choices.ravel(), size=int(abs(deficit)), replace=True)
+
+        for c in corrections:
+            rounded_vect[c] += def_sign
 
         if sum(rounded_vect) != 0:
             print('Warning: rounding failed')
 
         return rounded_vect
-
-    @staticmethod
-    def _normalize_and_scale(values):
-        # Pick max based on absolute
-        maxval = abs(max(values, key=abs))
-        # Scale to 500, as recommended
-        values = (values / maxval) * 500
-
-        return values
 
     def _score_elgram(self):
 
