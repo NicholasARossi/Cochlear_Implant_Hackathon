@@ -90,8 +90,7 @@ class Evolve:
         # Initialize multiple process pool
         self.pool = Pool()
 
-        # Start a logging file if needed
-        self.logfile = open(os.path.abspath(f'{self.checkpoint_folder}/logfile.txt'), 'w+')
+
 
     @property
     def bad_value(self):
@@ -114,14 +113,12 @@ class Evolve:
         # halloffame = tools.HallOfFame(maxsize=1)
 
 
-        self.logfile.writelines(self.logbook)
         # start timer
         start_time = time.time()
 
         for gen in range(self.end_gen):
             population = self._evolve(population, gen, start_time)
 
-        self.logfile.close()
 
     def _evolve(self, population, gen, start_time):
         '''
@@ -137,9 +134,7 @@ class Evolve:
         self._update_score_dictionary(invalid_ind, fitnesses)
         # Generate and store results
         self._update_logbook(population, start_time, gen, len(invalid_ind))
-        # Write logfile
-        self.logfile.writelines(self.logbook.stream)
-        self.logfile.write("\n")
+
 
         population = self.toolbox.select(population, k=len(population))
 
@@ -214,9 +209,10 @@ class Evolve:
         score = self.fw.score_new_transform(transform)
 
         # Generate result dict
-        results_scores = self.result_dict.update({'score': score})
+        self.result_dict.update({'score': score})
 
-        cp = dict(population=population, generation=gen, halloffame=self.best_individual, result_scores=results_scores,
+        cp = dict(population=population, generation=gen, halloffame=self.best_individual,
+                  result_scores=self.result_dict,
                   logbook=self.logbook, rndstate=random.getstate())
 
         # Save cp in a file
@@ -233,8 +229,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-w', '--wavefile_path', dest="wavefile_path", type=str,
-                        default=os.path.abspath('./sample_data/bladerunner_replicant_test.wav'), help="Path to wavefile")
-    parser.add_argument('-p', '--pop_size', dest="pop_size", type=int, default=5, help="Population size")
+                        default=os.path.abspath('sample_data/bladerunner_replicant_test.wav'), help="Path to wavefile")
+    parser.add_argument('-p', '--pop_size', dest="pop_size", type=int, default=10, help="Population size")
     parser.add_argument('-e', '--end_gen', dest="end_gen", type=int, default=30,
                         help="Number of generations for evolution")
     parser.add_argument('-v', '--verbose', dest="verbose", type=bool, default=True,
