@@ -32,15 +32,13 @@ class Evolve:
     def __init__(
         self,
         wavefile_path: str,
-        pop_size: int = 50,
+        pop_size: int = 10,
         end_gen: int = 30,
         verbose: bool = True,
         max_depth: int = 3,
         checkpoint_folder: str = 'checkpoints',
         checkpoint_interval: int = 5,
-        primitives_list: list = ['convolution','noise',
-                                   'multiplication',
-                                    'filter','phase']
+        primitives_list: list = 'convolution,noise,multiplication,filter,phase'
     ) -> None:
         '''
         :param wavefile_path: path (str), path to audio file
@@ -62,8 +60,22 @@ class Evolve:
         self.primitives_list=primitives_list
         # Initialize logbook
         self.logbook = tools.Logbook()
+        self.Datalog=pd.DataFrame()
+        mi=pd.MultiIndex.from_tuples([('fitness', 'avg'),
+         ('fitness', 'std'),
+         ('fitness', 'min'),
+         ('fitness', 'max'),
+         ('size', 'avg'),
+         ('size', 'std'),
+         ('size', 'min'),
+         ('size', 'max'),
+         ('time', 'total'),
+         ('time', 'remaining')])
 
+        self.datalog=pd.DataFrame(columns=mi)
+        print(f'Using the following primitive types {self.primitives_list}')
         # Initialize primitives
+
         self.toolbox, self.mstats, self.fw = custom_toolbox(self.wavefile_path,
                                                             max_depth=self.max_depth,
                                                             primitives_list=self.primitives_list)
@@ -122,10 +134,7 @@ class Evolve:
         fitnesses = [self._evaluate_f_evaluate_fitnessitness(ind) for ind in invalid_ind]
         #fitnesses = self.pool.map(self._evaluate_fitness, invalid_ind)
 
-
         self._update_score_dictionary(invalid_ind, fitnesses)
-
-
         # Generate and store results
         self._update_logbook(population, start_time, gen, len(invalid_ind))
         # Write logfile
@@ -145,9 +154,9 @@ class Evolve:
         Score the fitness of individuals
         '''
         try:
-            ## debug
-            # tree=PrimitiveTree(ind)
-            # str(tree)
+        ## debug
+        # tree=PrimitiveTree(ind)
+        # str(tree)
             transform = self.toolbox.compile(expr=ind)
             score = self.fw.score_new_transform(transform)
 
@@ -178,7 +187,9 @@ class Evolve:
         # Add time fields to record
         record.update(self._evalute_time_remaining(start_time, gen+1, self.end_gen))
 
+        self.datalog.loc[gen]=pd.DataFrame({**record}).unstack()
         self.logbook.record(gen=gen, evals=num_evals, **record)
+
         if self.verbose==True:
             print(self.logbook.stream)
 
@@ -210,6 +221,7 @@ class Evolve:
 
         # Save cp in a file
         with open(f"{self.checkpoint_folder}/{gen}_checkpoint.pkl", "wb") as cp_file:
+            self.datalog.to_csv(f"{self.checkpoint_folder}/datalog.csv")
             pickle.dump(cp, cp_file)
 
 
@@ -222,7 +234,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-w', '--wavefile_path', dest="wavefile_path", type=str,
                         default=os.path.abspath('./sample_data/bladerunner_replicant_test.wav'), help="Path to wavefile")
-    parser.add_argument('-p', '--pop_size', dest="pop_size", type=int, default=50, help="Population size")
+    parser.add_argument('-p', '--pop_size', dest="pop_size", type=int, default=5, help="Population size")
     parser.add_argument('-e', '--end_gen', dest="end_gen", type=int, default=30,
                         help="Number of generations for evolution")
     parser.add_argument('-v', '--verbose', dest="verbose", type=bool, default=True,
@@ -234,14 +246,12 @@ if __name__ == '__main__':
                         help="output folder for checkpoints")
     parser.add_argument('-i', '--checkpoint_interval', dest="checkpoint_interval", type=int, default=5,
                         help="save the checkpoints every n generations")
-    parser.add_argument('-l', '--primitives_list', dest="primitives_list", type=list, default=['convolution','noise',
-                                    'multiplication',
-                                    'filter','phase'],
+    parser.add_argument('-l', '--primitives_list', dest="primitives_list", type=str, default='convolution,noise,multiplication,filter,phase',
                         help="list of primitive types")
     args = parser.parse_args()
 
     run_evolution = Evolve(args.wavefile_path, pop_size=args.pop_size, end_gen=args.end_gen,
                            verbose=args.verbose, max_depth=args.max_depth,
                            checkpoint_folder=args.checkpoint_folder, checkpoint_interval=args.checkpoint_interval,
-                           primitives_list=args.primitives_list)
+                           primitives_list=args.primitives_list.split(','))
     run_evolution.run()

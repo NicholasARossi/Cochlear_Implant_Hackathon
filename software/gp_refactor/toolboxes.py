@@ -14,7 +14,7 @@ from software.gp_refactor.primitives import *
 
 
 def all_primitives(wavefile_path, optimization='maximum', max_depth=4):
-
+    print('engaging all primitives')
 
     fw = FitnessWrapper(wavefile_path)
 
@@ -115,7 +115,13 @@ def add_primitives(pset,primitives_list):
     '''
     This is a helper function mean to add suites of primitives for a given toolbox
 
+
     example primitive sets:
+=======
+    og_vect = VectorClass(fw.prepped_data, fw.prepped_rate)
+    og_mat = MatrixClass(np.vstack([fw.prepped_data] * 16))
+    og_ramp = VocoderRamp(os.path.abspath('./software/AB_imports/Vocoder/norm_ramp.npy'))
+    white_noise = NoiseClass(np.random.normal(0, 1, 1000))
 
     :param pset:
     :param primitives_list:
