@@ -2,9 +2,10 @@ import numpy as np
 import time
 import datetime
 from scipy.io import wavfile
+
 from sklearn.preprocessing import StandardScaler
 
-from software.gp_refactor.fitness_functions import convert_sample_rate, wavefile_max_xcor, fft_MSE
+from software.gp_refactor.fitness_functions import convert_sample_rate, wavefile_max_xcor, fft_MSE, compute_wavfile_delta, fft_correlation
 from software.AB_imports.Vocoder.vocoder import vocoderFunc
 
 
@@ -125,10 +126,10 @@ class FitnessWrapper:
         # print(f'{np.std(audioOut)},{np.max(audioOut)},{np.min(audioOut)},{np.median(audioOut)}')
 
         # TODO figure out the best possible fitness function
-        # score=fft_MSE(self.original_data,self.original_rate,self.audioOut,self.audioFs)
         score = wavefile_max_xcor(self.original_data, self.original_rate, self.audioOut, self.audioFs)
+        score2 = fft_correlation(self.original_data, self.original_rate, self.audioOut, self.audioFs)
 
-        return score
+        return score, score2*0.1
 
 
 class MatrixClass:
@@ -140,6 +141,16 @@ class MatrixClass:
         matrix = np.vstack([vect.data for vect in vector_list])
 
         return MatrixClass(matrix)
+
+
+class VocoderRamp:
+    def __init__(self, data_loc):
+        self.data = np.load(data_loc).T
+
+
+class NoiseClass:
+    def __init__(self, data):
+        self.data = data
 
 
 class VectorClass:
