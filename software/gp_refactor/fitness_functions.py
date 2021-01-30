@@ -62,5 +62,3 @@ def fft_correlation(reference, reference_rate, output, output_rate):
     min_len = min([len(a), len(b)])
 
     return pearsonr(a[:min_len], b[:min_len])[0]
-
-
