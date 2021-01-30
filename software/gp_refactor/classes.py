@@ -5,7 +5,7 @@ from scipy.io import wavfile
 
 from sklearn.preprocessing import StandardScaler
 
-from software.gp_refactor.fitness_functions import convert_sample_rate, wavefile_max_xcor, fft_MSE, compute_wavfile_delta, fft_correlation
+from software.gp_refactor.fitness_functions import convert_sample_rate, wavefile_max_xcor, fft_MSE, fft_correlation
 from software.AB_imports.Vocoder.vocoder import vocoderFunc
 
 

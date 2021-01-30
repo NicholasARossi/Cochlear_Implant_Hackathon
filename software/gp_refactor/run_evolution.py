@@ -38,7 +38,7 @@ class Evolve:
         max_depth: int = 3,
         checkpoint_folder: str = 'checkpoints',
         checkpoint_interval: int = 5,
-        primitives_list: list = 'convolution,noise,multiplication,filter,phase'
+        primitives_list: list = 'convolution,noise,multiplication,filter,phase,scale'
     ) -> None:
         '''
         :param wavefile_path: path (str), path to audio file
@@ -242,7 +242,7 @@ if __name__ == '__main__':
                         help="output folder for checkpoints")
     parser.add_argument('-i', '--checkpoint_interval', dest="checkpoint_interval", type=int, default=5,
                         help="save the checkpoints every n generations")
-    parser.add_argument('-l', '--primitives_list', dest="primitives_list", type=str, default='convolution,noise,multiplication,filter,phase',
+    parser.add_argument('-l', '--primitives_list', dest="primitives_list", type=str, default='convolution,noise,multiplication,filter,phase,scale',
                         help="list of primitive types")
     args = parser.parse_args()
 

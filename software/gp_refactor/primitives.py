@@ -2,6 +2,8 @@ import numpy as np
 
 from scipy.signal import convolve, medfilt, hilbert, butter, filtfilt, fftconvolve
 from software.gp_refactor.classes import VectorClass, MatrixClass, NoiseClass
+from sklearn.preprocessing import minmax_scale,QuantileTransformer,PowerTransformer
+from scipy.stats import norm
 
 
 def generate_sin_wav(vc, fc):
@@ -117,6 +119,7 @@ def vector_power(vc, x):
         return vc
     else:
         return vc
+
 
 
 def vector_flex_amplify(vc, into):
@@ -242,4 +245,61 @@ def return_band_noise(freq):
 
 def invert_vector(vc):
     vc.data = vc.data*-1
+    return vc
+
+def min_max_scale(vc):
+    scaled = minmax_scale(vc.data, [-500, 500])
+    vc.data=scaled
+    return vc
+
+def normal_scaler(vc):
+    quantile_transformer = QuantileTransformer(
+        output_distribution='normal', random_state=88)
+
+    data = quantile_transformer.fit_transform(vc.data.reshape(-1, 1))
+    vc.data=data.ravel()
+    return vc
+
+def uniform_scaler(vc):
+    quantile_transformer = QuantileTransformer(
+        output_distribution='uniform', random_state=88)
+
+    data = quantile_transformer.fit_transform(vc.data.reshape(-1, 1))
+    vc.data=data.ravel()
+    return vc
+
+def yeo_power_scaler(vc):
+    power_transform = PowerTransformer(
+        method='yeo-johnson', standardize=True)
+
+    data = power_transform.fit_transform(vc.data.reshape(-1, 1))
+    vc.data = data.ravel()
+    return vc
+
+def robust_scale(vc):
+    scaled = robust_scale(vc.data.reshape(-1, 1))
+    vc.data=scaled.ravel()
+    return vc
+
+def log(vc):
+    vc.data=np.log(vc.data)
+    return vc
+
+
+def max_norm(vc):
+    y = norm.pdf(np.linspace(-1, 1, 100))
+
+    output = np.dot(vc.data.reshape(-1, 1), y.reshape(-1, 1).T)
+
+    output=np.max(output, 1)
+    vc.data=output.ravel()
+    return vc
+
+def min_norm(vc):
+    y = norm.pdf(np.linspace(-1, 1, 100))
+
+    output = np.dot(vc.data.reshape(-1, 1), y.reshape(-1, 1).T)
+
+    output=np.min(output, 1)
+    vc.data=output.ravel()
     return vc

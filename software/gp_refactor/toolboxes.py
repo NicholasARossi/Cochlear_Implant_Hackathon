@@ -142,7 +142,6 @@ def add_primitives(pset,primitives_list):
     if 'multiplication' in primitives_list:
         pset.addPrimitive(invert_vector, [VectorClass], VectorClass)
         pset.addPrimitive(vector_multiply, [VectorClass, float], VectorClass)
-        pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 5), float)
         pset.addPrimitive(vector_flex_amplify, [VectorClass, int], VectorClass)
         pset.addPrimitive(operator.neg, [float], float)
 
@@ -158,6 +157,20 @@ def add_primitives(pset,primitives_list):
         pset.addTerminal(white_noise, NoiseClass, name='white_noise')
         pset.addPrimitive(return_band_noise, [int], NoiseClass)
 
+
+    if 'scale' in primitives_list:
+        pset.addPrimitive(min_max_scale, [VectorClass], VectorClass)
+        pset.addPrimitive(normal_scaler, [VectorClass], VectorClass)
+        pset.addPrimitive(uniform_scaler, [VectorClass], VectorClass)
+        pset.addPrimitive(yeo_power_scaler, [VectorClass], VectorClass)
+        pset.addPrimitive(robust_scale, [VectorClass], VectorClass)
+        pset.addPrimitive(log, [VectorClass], VectorClass)
+        pset.addPrimitive(max_norm, [VectorClass], VectorClass)
+        pset.addPrimitive(min_norm, [VectorClass], VectorClass)
+        pset.addPrimitive(vector_power, [VectorClass,float], VectorClass)
+
+
+
     ### add integer range used by all classes
     for z in np.arange(10, 2010, 100):
         pset.addTerminal(int(z), int)
@@ -169,6 +182,7 @@ def add_primitives(pset,primitives_list):
     pset.addPrimitive(pass_primitive, [NoiseClass], NoiseClass)
     pset.addPrimitive(pass_primitive, [int], int)
     pset.addPrimitive(pass_primitive, [float], float)
+    pset.addEphemeralConstant("uniform", lambda: random.uniform(0.5, 1.5), float)
 
     return pset
 
