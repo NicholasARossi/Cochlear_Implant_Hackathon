@@ -1,4 +1,4 @@
-from software.gp_refactor.toolboxes import all_primitives,custom_toolbox
+from software.gp_refactor.toolboxes import all_primitives, custom_toolbox
 from pathos.multiprocessing import ProcessingPool as Pool
 from deap import algorithms, tools
 import pandas as pd
@@ -57,22 +57,22 @@ class Evolve:
         self.max_depth = max_depth
         self.checkpoint_folder = checkpoint_folder
         self.checkpoint_interval = checkpoint_interval
-        self.primitives_list=primitives_list
+        self.primitives_list = primitives_list
         # Initialize logbook
         self.logbook = tools.Logbook()
-        self.Datalog=pd.DataFrame()
-        mi=pd.MultiIndex.from_tuples([('fitness', 'avg'),
-         ('fitness', 'std'),
-         ('fitness', 'min'),
-         ('fitness', 'max'),
-         ('size', 'avg'),
-         ('size', 'std'),
-         ('size', 'min'),
-         ('size', 'max'),
-         ('time', 'total'),
-         ('time', 'remaining')])
+        self.Datalog = pd.DataFrame()
+        mi = pd.MultiIndex.from_tuples([('fitness', 'avg'),
+                                        ('fitness', 'std'),
+                                        ('fitness', 'min'),
+                                        ('fitness', 'max'),
+                                        ('size', 'avg'),
+                                        ('size', 'std'),
+                                        ('size', 'min'),
+                                        ('size', 'max'),
+                                        ('time', 'total'),
+                                        ('time', 'remaining')])
 
-        self.datalog=pd.DataFrame(columns=mi)
+        self.datalog = pd.DataFrame(columns=mi)
         print(f'Using the following primitive types {self.primitives_list}')
         # Initialize primitives
 
@@ -90,13 +90,10 @@ class Evolve:
         # Initialize multiple process pool
         self.pool = Pool()
 
-
-
     @property
     def bad_value(self):
         # Initialize bad value
         return 0
-
 
     @property
     def result_dict(self):
@@ -112,13 +109,11 @@ class Evolve:
         population = self.toolbox.population(n=self.pop_size)
         # halloffame = tools.HallOfFame(maxsize=1)
 
-
         # start timer
         start_time = time.time()
 
         for gen in range(self.end_gen):
             population = self._evolve(population, gen, start_time)
-
 
     def _evolve(self, population, gen, start_time):
         '''
@@ -135,7 +130,6 @@ class Evolve:
         # Generate and store results
         self._update_logbook(population, start_time, gen, len(invalid_ind))
 
-
         population = self.toolbox.select(population, k=len(population))
 
         # After every n iterations create a checkpoint
@@ -149,9 +143,9 @@ class Evolve:
         Score the fitness of individuals
         '''
         try:
-        ## debug
-        # tree=PrimitiveTree(ind)
-        # str(tree)
+            # debug
+            # tree=PrimitiveTree(ind)
+            # str(tree)
             transform = self.toolbox.compile(expr=ind)
             score = self.fw.score_new_transform(transform)
 
@@ -182,10 +176,10 @@ class Evolve:
         # Add time fields to record
         record.update(self._evalute_time_remaining(start_time, gen+1, self.end_gen))
 
-        self.datalog.loc[gen]=pd.DataFrame({**record}).unstack()
+        self.datalog.loc[gen] = pd.DataFrame({**record}).unstack()
         self.logbook.record(gen=gen, evals=num_evals, **record)
 
-        if self.verbose==True:
+        if self.verbose == True:
             print(self.logbook.stream)
 
     @staticmethod
@@ -235,19 +229,17 @@ if __name__ == '__main__':
                         help="Number of generations for evolution")
     parser.add_argument('-v', '--verbose', dest="verbose", type=bool, default=True,
                         help="Verbose")
-
     parser.add_argument('-d', '--max_depth', dest="max_depth", type=int, default=3,
                         help="maximum depth of tree during generation")
     parser.add_argument('-c', '--checkpoint_folder', dest="checkpoint_folder", type=str, default='checkpoints',
                         help="output folder for checkpoints")
     parser.add_argument('-i', '--checkpoint_interval', dest="checkpoint_interval", type=int, default=5,
                         help="save the checkpoints every n generations")
-    parser.add_argument('-l', '--primitives_list', dest="primitives_list", type=str, default='convolution,noise,multiplication,filter,phase',
+    parser.add_argument('-l', '--primitives_list', dest="primitives_list", action='append',
                         help="list of primitive types")
     args = parser.parse_args()
 
     run_evolution = Evolve(args.wavefile_path, pop_size=args.pop_size, end_gen=args.end_gen,
-                           verbose=args.verbose, max_depth=args.max_depth,
-                           checkpoint_folder=args.checkpoint_folder, checkpoint_interval=args.checkpoint_interval,
-                           primitives_list=args.primitives_list.split(','))
+                           verbose=args.verbose, max_depth=args.max_depth, checkpoint_folder=args.checkpoint_folder,
+                           checkpoint_interval=args.checkpoint_interval, primitives_list=args.primitives_list)
     run_evolution.run()
