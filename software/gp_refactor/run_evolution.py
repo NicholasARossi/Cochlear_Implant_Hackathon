@@ -1,4 +1,4 @@
-from software.gp_refactor.toolboxes import all_primitives,custom_toolbox
+from software.gp_refactor.toolboxes import custom_toolbox
 from pathos.multiprocessing import ProcessingPool as Pool
 from deap import algorithms, tools
 import pandas as pd

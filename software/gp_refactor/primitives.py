@@ -1,6 +1,6 @@
 import numpy as np
 
-from scipy.signal import convolve, medfilt, hilbert, butter, filtfilt, fftconvolve
+from scipy.signal import convolve, medfilt, hilbert, butter, filtfilt, fftconvolve,resample
 from software.gp_refactor.classes import VectorClass, MatrixClass, NoiseClass
 from sklearn.preprocessing import minmax_scale,QuantileTransformer,PowerTransformer
 from scipy.stats import norm
@@ -114,11 +114,8 @@ def vector_multiply(vc, x):
 
 
 def vector_power(vc, x):
-    if x is not None:
-        vc.data = np.power(vc.data, x)
-        return vc
-    else:
-        return vc
+    vc.data=np.multiply(np.power(abs(vc.data), x), np.sign(vc.data))
+    return vc
 
 
 
@@ -281,10 +278,6 @@ def robust_scale(vc):
     vc.data=scaled.ravel()
     return vc
 
-def log(vc):
-    vc.data=np.log(vc.data)
-    return vc
-
 
 def max_norm(vc):
     y = norm.pdf(np.linspace(-1, 1, 100))
@@ -302,4 +295,15 @@ def min_norm(vc):
 
     output=np.min(output, 1)
     vc.data=output.ravel()
+    return vc
+
+def vector_resample(vc,integer):
+
+    y = resample(vc.data, integer)
+    y = resample(y, int(len(vc.data)))
+    vc.data=y
+    return vc
+
+def vector_clip(vc,integer):
+    vc.data=np.clip(vc.data, -integer, integer)
     return vc
