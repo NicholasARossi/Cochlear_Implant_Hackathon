@@ -307,3 +307,11 @@ def vector_resample(vc,integer):
 def vector_clip(vc,integer):
     vc.data=np.clip(vc.data, -integer, integer)
     return vc
+
+def vector_threshold(vc,float):
+    if float>=1:
+        temp_float=float-1
+    else:
+        temp_float=float
+    vc.data[np.abs(vc.data)<(temp_float*np.absmax(vc.data))]=0
+    return vc

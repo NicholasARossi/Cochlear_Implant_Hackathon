@@ -67,7 +67,10 @@ def add_primitives(pset,primitives_list):
         # pset.addPrimitive(min_norm, [VectorClass], VectorClass)
         pset.addPrimitive(vector_power, [VectorClass,float], VectorClass)
         pset.addPrimitive(vector_resample,[VectorClass,int], VectorClass)
+
+    if 'clip' in primitives_list:
         pset.addPrimitive(vector_clip,[VectorClass,int], VectorClass)
+        pset.addPrimitive(vector_threshold,[VectorClass,float], VectorClass)
 
 
     ### add integer range used by all classes

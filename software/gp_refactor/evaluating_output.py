@@ -12,6 +12,7 @@ import pickle
 import re
 import argparse
 import os
+import seaborn as sns
 
 def atoi(text):
     return int(text) if text.isdigit() else text
@@ -161,12 +162,30 @@ class Audit:
         fig.savefig(f'{self.figure_folder}/metrics.png',dpi=300,bbox_inches='tight')
 
 
+    def _plot_pareto(self):
+
+        colors = sns.color_palette("Set2", len(self.checkpoints))
+        fig, ax = plt.subplots()
+
+        for l, checkpoint in enumerate(self.checkpoints):
+            results = pickle.load(open(checkpoint, "rb"))
+
+            for ind in results['population']:
+                values = ind.fitness.values
+                ax.scatter(values[0], values[1], color=colors[l],label=str(l))
+
+        ax.set_xlabel('Time Series Correlation')
+        ax.set_ylabel('Frequency Correlation')
+        fig.savefig(f'{self.figure_folder}/pareto.png',dpi=300,bbox_inches='tight')
+
+
     def run(self):
         self._get_default_results()
         self._compare_time_series()
         self._compare_frequency()
         self._bake_sound_files()
         self._plot_metrics()
+        self._plot_pareto()
 
 
 if __name__ == '__main__':

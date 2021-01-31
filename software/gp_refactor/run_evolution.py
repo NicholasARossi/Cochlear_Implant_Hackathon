@@ -73,6 +73,10 @@ class Evolve:
                                         ('time', 'remaining')])
 
         self.datalog = pd.DataFrame(columns=mi)
+
+        if 'all' in self.primitives_list:
+            self.primitives_list=['convolution','noise','multiplication','filter','phase','noise','scale','clip']
+
         print(f'Using the following primitive types {self.primitives_list}')
         # Initialize primitives
 
