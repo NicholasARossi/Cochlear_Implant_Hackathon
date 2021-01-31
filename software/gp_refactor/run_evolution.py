@@ -1,5 +1,4 @@
 from software.gp_refactor.toolboxes import custom_toolbox
-from pathos.multiprocessing import ProcessingPool as Pool
 from deap import algorithms, tools
 import pandas as pd
 import os
@@ -92,7 +91,6 @@ class Evolve:
             os.makedirs(self.checkpoint_folder)
 
         # Initialize multiple process pool
-        self.pool = Pool()
 
     @property
     def bad_value(self):
