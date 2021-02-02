@@ -47,7 +47,7 @@ class Audit:
         checkpoints=glob(self.checkpoint_folder+'/*pkl')
         # sort
         checkpoints.sort(key=natural_keys)
-        self.checkpoints=checkpoints
+        self.checkpoints=checkpoints[:-1]
 
         self.toolbox = custom_toolbox(self.wavefile_path)
         self.figure_folder=os.path.join(self.checkpoint_folder,'figures')
@@ -164,7 +164,7 @@ class Audit:
 
     def _plot_pareto(self):
 
-        colors = sns.color_palette("Set2", len(self.checkpoints))
+        colors = sns.color_palette("rainbow", len(self.checkpoints))
         fig, ax = plt.subplots()
 
         for l, checkpoint in enumerate(self.checkpoints):

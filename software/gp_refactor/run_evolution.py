@@ -151,8 +151,8 @@ class Evolve:
             transform = self.toolbox.compile(expr=ind)
             score = self.fw.score_new_transform(transform)
 
-            if np.isnan(score).max():
-                return (self.bad_value, self.bad_value)
+            if np.isnan(score):
+                return self.bad_value
             return score
 
         except:
@@ -161,8 +161,8 @@ class Evolve:
     def _update_score_dictionary(self, invalid_ind, fitnesses):
         for ind, fit in zip(invalid_ind, fitnesses):
             # Update best score // to handel multi-parameter optimization we simply sum the values
-            if sum(fit) > self.best_individual['score']:
-                self.best_individual['score'] = sum(fit)
+            if fit[0] > self.best_individual['score']:
+                self.best_individual['score'] = fit[0]
                 self.best_individual['individual'] = ind
 
             # Update fitness value for the population index

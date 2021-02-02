@@ -127,9 +127,8 @@ class FitnessWrapper:
 
         # TODO figure out the best possible fitness function
         score = wavefile_max_xcor(self.original_data, self.original_rate, self.audioOut, self.audioFs)
-        score2 = fft_correlation(self.original_data, self.original_rate, self.audioOut, self.audioFs)
 
-        return score, score2*0.1
+        return score,
 
 
 class MatrixClass:
