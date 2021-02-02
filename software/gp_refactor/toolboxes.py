@@ -127,9 +127,10 @@ def custom_toolbox(wavefile_path,
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
 
-    toolbox.register("select", tools.selNSGA2)
-
-    toolbox.register("mate", gp.cxOnePointLeafBiased,termpb=0.1)
+    #toolbox.register("select", tools.selNSGA2)
+    toolbox.register("select", tools.selTournament,tournsize=3)
+    #toolbox.register("mate", gp.cxOnePointLeafBiased,termpb=0.1)
+    toolbox.register("mate", gp.cxOnePoint)
     toolbox.register("expr_mut", gp.genFull, min_=1, max_=max_depth)
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
