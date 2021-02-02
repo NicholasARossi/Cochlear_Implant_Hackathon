@@ -161,8 +161,8 @@ class Evolve:
     def _update_score_dictionary(self, invalid_ind, fitnesses):
         for ind, fit in zip(invalid_ind, fitnesses):
             # Update best score // to handel multi-parameter optimization we simply sum the values
-            if fit > self.best_individual['score']:
-                self.best_individual['score'] = fit
+            if np.sum(fit) > self.best_individual['score']:
+                self.best_individual['score'] = np.sum(fit)
                 self.best_individual['individual'] = ind
 
             # Update fitness value for the population index
