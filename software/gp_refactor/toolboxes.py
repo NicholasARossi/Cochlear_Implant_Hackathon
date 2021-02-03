@@ -72,6 +72,9 @@ def add_primitives(pset,primitives_list):
         pset.addPrimitive(vector_clip,[VectorClass,int], VectorClass)
         pset.addPrimitive(vector_threshold,[VectorClass,float], VectorClass)
 
+    if 'ultra_min' in primitives_list:
+        pset.addPrimitive(flex_low_freq, [VectorClass, int], VectorClass)
+
 
     ### add integer range used by all classes
     for z in np.arange(10, 2010, 100):
