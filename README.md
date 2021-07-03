@@ -1,6 +1,8 @@
 # Instuctions for running GP solution to hackathon
 
 ### Intro : 
+Below is a codebase for our team's solution to the [2021 Cochlear Implant Hackathon](https://cihackathon.com/)
+
 This solution relies hevily on the [DEAP](https://deap.readthedocs.io/en/master/) package. Reading the documentation there for [genetic programming](https://en.wikipedia.org/wiki/Genetic_programming) could be useful before understanding what's at play here.
 
 
